@@ -59,3 +59,44 @@ IdTipo INT
 CONSTRAINT FK_Movimiento_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente),
 CONSTRAINT FK_Movimiento_Tipo FOREIGN KEY (IdTipo) REFERENCES TipoMovimiento(IdTipo)
 )
+
+CREATE TABLE TipoCategoriaMovimiento (
+    IdTipoCategoria INT PRIMARY KEY IDENTITY(1,1),
+    NombreTipo VARCHAR(30), 
+    Descripcion VARCHAR(100)
+)
+INSERT INTO TipoCategoriaMovimiento (NombreTipo, Descripcion)
+VALUES ('Fijo', 'Gastos fijos'), ('Variable', 'Gastos variables'),('Hormiga', 'Peque�os gastos'),('Inversion', 'Inversiones')
+
+CREATE TABLE CategoriaMovimiento (
+    IdCategoria INT PRIMARY KEY IDENTITY (1,1),
+    NombreCategoria VARCHAR(50),
+    IdTipoMovimiento INT, 
+    IdTipoCategoria INT,  
+    CONSTRAINT FK_Categoria_TipoMovimiento FOREIGN KEY (IdTipoMovimiento) REFERENCES TipoMovimiento(IdTipo),
+    CONSTRAINT FK_Categoria_TipoCategoriaMovimiento FOREIGN KEY (IdTipoCategoria) REFERENCES TipoCategoriaMovimiento(IdTipoCategoria)
+)
+
+INSERT INTO CategoriaMovimiento (NombreCategoria, IdTipoMovimiento, IdTipoCategoria) VALUES ('Servicio', 2, 1)
+
+INSERT INTO CategoriaMovimiento (NombreCategoria, IdTipoMovimiento, IdTipoCategoria) VALUES ('Alimentaci�n', 2, 3)
+
+INSERT INTO CategoriaMovimiento (NombreCategoria, IdTipoMovimiento, IdTipoCategoria) VALUES ('Transporte', 2, 3)
+
+INSERT INTO CategoriaMovimiento (NombreCategoria, IdTipoMovimiento, IdTipoCategoria) VALUES ('Entretenimiento', 2, 2)
+
+INSERT INTO CategoriaMovimiento (NombreCategoria, IdTipoMovimiento, IdTipoCategoria) VALUES ('Ahorro', 1, 4)
+
+ALTER TABLE Movimiento
+ADD IdCategoria INT
+
+ALTER TABLE Movimiento
+ADD CONSTRAINT FK_Movimiento_Categoria
+FOREIGN KEY (IdCategoria) REFERENCES CategoriaMovimiento(IdCategoria)
+
+CREATE TABLE Bitacora (
+    IdBitacora INT IDENTITY(1,1) PRIMARY KEY,
+    Accion VARCHAR(50),
+    Descripcion VARCHAR(255),
+    Fecha DATETIME DEFAULT GETDATE()
+)
