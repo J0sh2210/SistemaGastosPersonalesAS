@@ -2,7 +2,7 @@ CREATE DATABASE SistemasGastosAS;
 GO
 USE SistemasGastosAS;
 GO
-
+/*ELR_ENMA*/
 CREATE TABLE Cliente (
   IdCliente INT PRIMARY KEY IDENTITY(1,1),
   PrimerNombre VARCHAR(25),
@@ -29,7 +29,7 @@ CREATE TABLE Telefono (
 
 CREATE TABLE CuentaUsuario (
   IdCuentaUsuario INT PRIMARY KEY IDENTITY(1,1),
-  Contraseña VARCHAR(100),
+  Contraseï¿½a VARCHAR(100),
   NombreUsuario VARCHAR(25) UNIQUE,
   IdCliente INT,
   CONSTRAINT FK_CuentaUsuario_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
