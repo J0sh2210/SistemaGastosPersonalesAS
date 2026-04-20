@@ -41,3 +41,9 @@ class RegistroUsuario(BaseModel):
 class LoginUsuario(BaseModel):
     username: str
     password: str
+
+class ActualizarUsuario(BaseModel):
+    primerNombre: str
+    segundoNombre: str | None = None
+    primerApellido: str
+    segundoApellido: str | None = None
