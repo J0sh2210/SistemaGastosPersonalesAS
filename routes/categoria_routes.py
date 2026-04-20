@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from models.categoria_model import CategoriaCreate
-from services.categoria_service import crear_categoria, obtener_categorias
+from models.categoria_model import CategoriaCreate, CategoriaUpdate
+from services.categoria_service import editar_categoria, crear_categoria, obtener_categorias
 
 router = APIRouter(prefix="/categorias", tags=["Categorias"])
 
@@ -13,3 +13,7 @@ def crear(categoria: CategoriaCreate):
 @router.get("/")
 def listar():
     return obtener_categorias()
+
+@router.put("/{id}")
+def editar(id: int, categoria: CategoriaUpdate):
+    return editar_categoria(id, categoria)
