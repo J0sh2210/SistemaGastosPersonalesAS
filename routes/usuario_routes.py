@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from database import SessionLocal
 
-from models.usuario_model import RegistroUsuario, Cliente, Usuario
+from models.usuario_model import RegistroUsuario, Cliente, Usuario, ActualizarUsuario
 from services.auth_service import hash_password, verify_password, create_access_token, get_current_user
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -99,3 +99,32 @@ def perfil(
         "apellido": cliente.PrimerApellido,
         "segundoApellido": cliente.SegundoApellido
     }
+
+@router.put("/perfil")
+def actualizar_perfil(
+    data: ActualizarUsuario,
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(get_current_user)
+):
+    # 1. Buscar usuario logeado
+    usuario = db.query(Usuario).filter(
+        Usuario.NombreUsuario == usuario_actual
+    ).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    # 2. Buscar cliente relacionado
+    cliente = db.query(Cliente).filter(
+        Cliente.IdCliente == usuario.IdCliente
+    ).first()
+
+    # 3. Actualizar datos
+    cliente.PrimerNombre = data.primerNombre
+    cliente.SegundoNombre = data.segundoNombre
+    cliente.PrimerApellido = data.primerApellido
+    cliente.SegundoApellido = data.segundoApellido
+
+    db.commit()
+
+    return {"message": "Perfil actualizado correctamente"}
