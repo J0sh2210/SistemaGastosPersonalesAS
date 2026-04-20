@@ -134,3 +134,61 @@ def existe_tipo_categoria(id_tipo):
         ).fetchone()
 
         return result is not None
+
+# VALIDACION SI EXISTE CATEGORIA
+def existe_categoria(id_categoria):
+    with engine.connect() as conn:
+        result = conn.execute(
+            text("SELECT 1 FROM CategoriaMovimiento WHERE IdCategoria = :id"),
+            {"id": id_categoria}
+        ).fetchone()
+        return result is not None
+
+# VALIDACION SI LA CATEGORIA TIENE MOVIMIENTOS ASOCIADOS
+def tiene_movimientos_categoria(id_categoria):
+    with engine.connect() as conn:
+        result = conn.execute(
+            text("""
+                SELECT 1 
+                FROM Movimiento 
+                WHERE IdCategoria = :id
+            """),
+            {"id": id_categoria}
+        ).fetchone()
+        return result is not None
+
+# REGRISTRA LAS ELIMINACION DE LAS CATEGORIAS
+def registrar_bitacora(accion, descripcion):
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+                INSERT INTO Bitacora (Accion, Descripcion)
+                VALUES (:accion, :descripcion)
+            """),
+            {"accion": accion, "descripcion": descripcion}
+        )
+
+# ELIMINAR CATEGORIA
+def eliminar_categoria(id_categoria):
+
+    if not existe_categoria(id_categoria):
+        return {"error": "La categoría no existe"}
+
+    if tiene_movimientos_categoria(id_categoria):
+        return {"error": "No se puede eliminar, la categoría tiene movimientos asociados"}
+
+    with engine.begin() as conn:
+        conn.execute(
+            text("""
+                DELETE FROM CategoriaMovimiento
+                WHERE IdCategoria = :id
+            """),
+            {"id": id_categoria}
+        )
+
+    registrar_bitacora(
+        "DELETE",
+        f"Se eliminó la categoría con ID {id_categoria}"
+    )
+
+    return {"mensaje": "Categoría eliminada correctamente"}
