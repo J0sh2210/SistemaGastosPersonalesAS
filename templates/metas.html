@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Metas de Ahorro</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
+        body { background: #f0f2f5; display: flex; justify-content: center; padding: 40px 20px; }
+        .container { width: 100%; max-width: 600px; }
+        h1 { color: #2c3e50; margin-bottom: 24px; text-align: center; }
+        .card { background: white; border-radius: 10px; padding: 28px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 24px; }
+        h2 { color: #34495e; margin-bottom: 20px; font-size: 18px; }
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; color: #555; font-size: 14px; font-weight: bold; }
+        input { width: 100%; padding: 10px 14px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; transition: border 0.2s; }
+        input:focus { outline: none; border-color: #3498db; }
+        input.error { border-color: #e74c3c; }
+        .error-msg { color: #e74c3c; font-size: 12px; margin-top: 4px; display: none; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
+        .btn-primary { background: #3498db; color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .alert { padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; display: none; }
+        .alert-success { background: #d5f5e3; color: #1e8449; border: 1px solid #a9dfbf; }
+        .alert-error { background: #fadbd8; color: #922b21; border: 1px solid #f1948a; }
+        .meta-list { list-style: none; }
+        .meta-item { background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .meta-info h3 { color: #2c3e50; font-size: 15px; }
+        .meta-info p { color: #7f8c8d; font-size: 13px; margin-top: 4px; }
+        .btn-delete { padding: 8px 16px; font-size: 13px; width: auto; border-radius: 6px; border: none; background: #e74c3c; color: white; cursor: pointer; font-weight: bold; }
+        .btn-delete:hover { background: #c0392b; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: white; border-radius: 10px; padding: 28px; width: 90%; max-width: 400px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .modal h2 { color: #e74c3c; margin-bottom: 12px; }
+        .modal p { color: #555; margin-bottom: 24px; font-size: 14px; }
+        .modal-buttons { display: flex; gap: 12px; }
+        .modal-buttons .btn { width: 50%; }
+        .empty-msg { text-align: center; color: #aaa; padding: 20px; font-size: 14px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>💰 Metas de Ahorro</h1>
+
+    <!-- FORMULARIO CREAR META -->
+    <div class="card">
+        <h2>➕ Nueva Meta</h2>
+        <div id="alert-success" class="alert alert-success">✅ Meta creada correctamente.</div>
+        <div id="alert-error" class="alert alert-error"></div>
+
+        <div class="form-group">
+            <label>Nombre de la meta</label>
+            <input type="text" id="nombreMeta" placeholder="Ej: Fondo de emergencia">
+            <div class="error-msg" id="err-nombre">El nombre es obligatorio.</div>
+        </div>
+        <div class="form-group">
+            <label>Monto objetivo (Q)</label>
+            <input type="number" id="montoObjetivo" placeholder="Ej: 5000" min="0.01" step="0.01">
+            <div class="error-msg" id="err-monto-obj">El monto objetivo debe ser mayor a cero.</div>
+        </div>
+        <div class="form-group">
+            <label>Fecha límite</label>
+            <input type="date" id="fechaLimite">
+            <div class="error-msg" id="err-fecha">La fecha límite no puede ser anterior a hoy.</div>
+        </div>
+        <div class="form-group">
+            <label>Monto actual ahorrado (Q)</label>
+            <input type="number" id="montoActual" placeholder="Ej: 0" min="0" step="0.01" value="0">
+            <div class="error-msg" id="err-monto-act">El monto actual no puede ser negativo.</div>
+        </div>
+        <button class="btn btn-primary" onclick="crearMeta()">Crear Meta</button>
+    </div>
+
+    <!-- LISTA DE METAS -->
+    <div class="card">
+        <h2>📋 Mis Metas</h2>
+        <ul class="meta-list" id="lista-metas">
+            <li class="empty-msg">No tienes metas registradas aún.</li>
+        </ul>
+    </div>
+</div>
+
+<!-- MODAL CONFIRMACION ELIMINAR -->
+<div class="modal-overlay" id="modal-eliminar">
+    <div class="modal">
+        <h2>⚠️ Eliminar Meta</h2>
+        <p id="modal-msg">¿Estás seguro que deseas eliminar esta meta? Esta acción no se puede deshacer.</p>
+        <div class="modal-buttons">
+            <button class="btn btn-secondary" onclick="cancelarEliminar()">Cancelar</button>
+            <button class="btn btn-danger" onclick="confirmarEliminar()">Sí, eliminar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = "http://localhost:8000";
+    const ID_USUARIO = 1; // Cambiar por el usuario en sesión
+    let metaAEliminar = null;
+
+    // Fecha mínima = hoy
+    document.getElementById("fechaLimite").min = new Date().toISOString().split("T")[0];
+
+    // =====================
+    // CREAR META
+    // =====================
+    async function crearMeta() {
+        ocultarAlertas();
+        if (!validarFormulario()) return;
+
+        const body = {
+            idUsuario: ID_USUARIO,
+            nombreMeta: document.getElementById("nombreMeta").value.trim(),
+            montoObjetivo: parseFloat(document.getElementById("montoObjetivo").value),
+            fechaLimite: document.getElementById("fechaLimite").value,
+            montoActual: parseFloat(document.getElementById("montoActual").value) || 0
+        };
+
+        try {
+            const res = await fetch(`${API}/api/metas/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                document.getElementById("alert-success").style.display = "block";
+                limpiarFormulario();
+                cargarMetas();
+            } else {
+                mostrarError(data.detail || "Error al crear la meta.");
+            }
+        } catch (e) {
+            mostrarError("No se pudo conectar con el servidor.");
+        }
+    }
+
+    // =====================
+    // CARGAR METAS
+    // =====================
+    async function cargarMetas() {
+        try {
+            const res = await fetch(`${API}/api/metas/?idUsuario=${ID_USUARIO}`);
+            if (!res.ok) return;
+            const metas = await res.json();
+            renderMetas(metas);
+        } catch (e) {
+            console.error("Error cargando metas:", e);
+        }
+    }
+
+    function renderMetas(metas) {
+        const lista = document.getElementById("lista-metas");
+        if (!metas || metas.length === 0) {
+            lista.innerHTML = '<li class="empty-msg">No tienes metas registradas aún.</li>';
+            return;
+        }
+        lista.innerHTML = metas.map(m => `
+            <li class="meta-item">
+                <div class="meta-info">
+                    <h3>${m.nombreMeta}</h3>
+                    <p>Objetivo: Q${m.montoObjetivo} | Ahorrado: Q${m.montoActual} | Límite: ${m.fechaLimite}</p>
+                </div>
+                <button class="btn-delete" onclick="abrirModal(${m.idMeta}, '${m.nombreMeta}')">Eliminar</button>
+            </li>
+        `).join("");
+    }
+
+    // =====================
+    // MODAL ELIMINAR
+    // =====================
+    function abrirModal(idMeta, nombre) {
+        metaAEliminar = idMeta;
+        document.getElementById("modal-msg").textContent =
+            `¿Estás seguro que deseas eliminar la meta "${nombre}"? Esta acción no se puede deshacer.`;
+        document.getElementById("modal-eliminar").classList.add("active");
+    }
+
+    function cancelarEliminar() {
+        metaAEliminar = null;
+        document.getElementById("modal-eliminar").classList.remove("active");
+    }
+
+    async function confirmarEliminar() {
+        if (!metaAEliminar) return;
+        try {
+            const res = await fetch(`${API}/api/metas/${metaAEliminar}?idUsuario=${ID_USUARIO}&confirmar=true`, {
+                method: "DELETE"
+            });
+            if (res.ok) {
+                cancelarEliminar();
+                cargarMetas();
+            } else {
+                const data = await res.json();
+                alert(data.detail || "Error al eliminar.");
+            }
+        } catch (e) {
+            alert("No se pudo conectar con el servidor.");
+        }
+    }
+
+    // =====================
+    // VALIDACIONES
+    // =====================
+    function validarFormulario() {
+        let valido = true;
+        const nombre = document.getElementById("nombreMeta").value.trim();
+        const montoObj = parseFloat(document.getElementById("montoObjetivo").value);
+        const fecha = document.getElementById("fechaLimite").value;
+        const montoAct = parseFloat(document.getElementById("montoActual").value);
+        const hoy = new Date().toISOString().split("T")[0];
+
+        if (!nombre) { mostrarCampoError("nombreMeta", "err-nombre"); valido = false; }
+        if (!montoObj || montoObj <= 0) { mostrarCampoError("montoObjetivo", "err-monto-obj"); valido = false; }
+        if (!fecha || fecha < hoy) { mostrarCampoError("fechaLimite", "err-fecha"); valido = false; }
+        if (isNaN(montoAct) || montoAct < 0) { mostrarCampoError("montoActual", "err-monto-act"); valido = false; }
+        return valido;
+    }
+
+    function mostrarCampoError(inputId, errId) {
+        document.getElementById(inputId).classList.add("error");
+        document.getElementById(errId).style.display = "block";
+    }
+
+    function ocultarAlertas() {
+        document.querySelectorAll(".error-msg").forEach(e => e.style.display = "none");
+        document.querySelectorAll("input").forEach(i => i.classList.remove("error"));
+        document.getElementById("alert-success").style.display = "none";
+        document.getElementById("alert-error").style.display = "none";
+    }
+
+    function mostrarError(msg) {
+        const el = document.getElementById("alert-error");
+        el.textContent = "❌ " + msg;
+        el.style.display = "block";
+    }
+
+    function limpiarFormulario() {
+        document.getElementById("nombreMeta").value = "";
+        document.getElementById("montoObjetivo").value = "";
+        document.getElementById("fechaLimite").value = "";
+        document.getElementById("montoActual").value = "0";
+    }
+
+    // Cargar metas al iniciar
+    cargarMetas();
+</script>
+</body>
+</html>
