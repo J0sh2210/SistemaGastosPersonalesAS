@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alerta de Presupuesto - Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .progress-bar { height: 20px; background: #e5e7eb; border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; transition: width 0.3s; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; }
+        .status-ok { background: #10b981; }
+        .status-warning { background: #f59e0b; }
+        .status-exceeded { background: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 text-center">🚨 Alerta de Presupuesto</h1>
+        
+        <!-- Month Selector -->
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+            <label class="block text-sm font-medium mb-2">Mes:</label>
+            <select id="monthSelect" class="p-2 border rounded w-32"></select>
+            <button id="currentMonthBtn" class="ml-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Mes Actual</button>
+            <button id="refreshBtn" class="ml-2 px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Refrescar</button>
+        </div>
+
+        <!-- Threshold Config -->
+        <div class="mb-6 p-4 bg-purple-50 rounded-lg flex items-center">
+            <label class="mr-4">Umbral Alerta (%): <span id="currentThreshold" class="font-bold"></span></label>
+            <input type="range" id="thresholdSlider" min="50" max="95" step="5" class="w-32 mx-4">
+            <span id="thresholdValue" class="px-3 py-1 bg-purple-200 rounded-full font-bold"></span>
+            <button id="updateThresholdBtn" class="ml-4 px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Actualizar</button>
+        </div>
+
+        <!-- Alerts Section -->
+        <div id="alertsSection" class="mb-6 p-4 bg-red-50 rounded-lg hidden">
+            <h3 class="text-xl font-bold text-red-800 mb-2">🔔 Nuevas Alertas</h3>
+            <div id="alertsList"></div>
+        </div>
+
+        <!-- Categories Table + Progress -->
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="border border-gray-300 p-3 text-left">Categoría</th>
+                        <th class="border border-gray-300 p-3 text-right">Presupuestado</th>
+                        <th class="border border-gray-300 p-3 text-right">Gastado</th>
+                        <th class="border border-gray-300 p-3 text-right">%</th>
+                        <th class="border border-gray-300 p-3 text-center">Progreso</th>
+                        <th class="border border-gray-300 p-3 text-center">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="categoriesTable">
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Summary -->
+        <div class="mt-8 p-6 bg-indigo-50 rounded-lg">
+            <h3 class="text-xl font-bold mb-4">Resumen General</h3>
+            <div id="summaryStats" class="grid grid-cols-3 gap-4 text-center"></div>
+        </div>
+
+        <!-- Add Forms -->
+        <div class="mt-8 grid grid-cols-2 gap-6">
+            <div class="p-4 bg-green-50 rounded-lg">
+                <h4 class="font-bold mb-4">Agregar Presupuesto</h4>
+                <input id="budgetCat" placeholder="Categoría" class="w-full p-2 border rounded mb-2">
+                <input id="budgetAmt" type="number" placeholder="Monto" class="w-full p-2 border rounded mb-2">
+                <button id="addBudgetBtn" class="w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Agregar</button>
+            </div>
+            <div class="p-4 bg-orange-50 rounded-lg">
+                <h4 class="font-bold mb-4">Agregar Gasto</h4>
+                <input id="expenseCat" placeholder="Categoría" class="w-full p-2 border rounded mb-2">
+                <input id="expenseAmt" type="number" placeholder="Monto" class="w-full p-2 border rounded mb-2">
+                <button id="addExpenseBtn" class="w-full px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">Agregar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000';
+        let currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+
+        async function fetchData(month) {
+            try {
+                const categoriesRes = await fetch(`${API_BASE}/categories/${month}`);
+                const categoriesData = await categoriesRes.json();
+                renderCategories(categoriesData.categories, categoriesData.summary);
+                
+                const alertsRes = await fetch(`${API_BASE}/alerts/${month}`);
+                const alertsData = await alertsRes.json();
+                renderAlerts(alertsData.new_alerts);
+                
+                document.getElementById('monthSelect').value = month;
+            } catch (err) {
+                console.error('Error fetching data:', err);
+                alert('Error conectando con API. Asegúrate de que el servidor esté corriendo.');
+            }
+        }
+
+        function renderCategories(categories, summary) {
+            const tbody = document.getElementById('categoriesTable');
+            tbody.innerHTML = '';
+            
+            Object.entries(categories).forEach(([cat, data]) => {
+                const row = document.createElement('tr');
+                row.className = data.status === 'exceeded' ? 'bg-red-100' : 
+                               data.status === 'warning' ? 'bg-yellow-100' : 'bg-green-50';
+                
+                row.innerHTML = `
+                    <td class="border border-gray-300 p-3 font-medium">${cat}</td>
+                    <td class="border border-gray-300 p-3 text-right">$${data.budgeted.toFixed(2)}</td>
+                    <td class="border border-gray-300 p-3 text-right font-bold">$${data.spent.toFixed(2)}</td>
+                    <td class="border border-gray-300 p-3 text-right">${data.percentage}%</td>
+                    <td class="border border-gray-300 p-3">
+                        <div class="progress-bar mx-auto w-24">
+                            <div class="progress-fill status-${data.status}" style="width: ${Math.min(data.percentage, 100)}%">
+                                ${data.percentage}%
+                            </div>
+                        </div>
+                    </td>
+                    <td class="border border-gray-300 p-3 text-center font-bold text-lg">
+                        <span class="px-2 py-1 rounded-full 
+                            ${data.status === 'exceeded' ? 'bg-red-200 text-red-800' :
+                             data.status === 'warning' ? 'bg-yellow-200 text-yellow-800' : 'bg-green-200 text-green-800'}">
+                            ${data.status}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Summary
+            const summaryDiv = document.getElementById('summaryStats');
+            summaryDiv.innerHTML = `
+                <div><strong>Total Presupuestado</strong><br>$${summary.total_budgeted.toFixed(2)}</div>
+                <div><strong>Total Gastado</strong><br>$${summary.total_spent.toFixed(2)}</div>
+                <div class="text-2xl ${summary.overall_percentage > 80 ? 'text-red-600' : 'text-green-600'}">
+                    <strong>${summary.overall_percentage}%</strong>
+                </div>
+            `;
+        }
+
+        function renderAlerts(alerts) {
+            const section = document.getElementById('alertsSection');
+            const list = document.getElementById('alertsList');
+            if (alerts.length === 0) {
+                section.classList.add('hidden');
+                return;
+            }
+            section.classList.remove('hidden');
+            list.innerHTML = alerts.map(a => 
+                `<div class="bg-red-200 p-3 mb-2 rounded-lg">
+                    🚨 ${a.category}: ${a.percentage}% (${a.status.toUpperCase()}) - $${a.spent.toFixed(2)} / $${a.budgeted.toFixed(2)}
+                </div>`
+            ).join('');
+        }
+
+        // Event listeners
+        document.getElementById('refreshBtn').onclick = () => fetchData(currentMonth);
+        document.getElementById('currentMonthBtn').onclick = () => {
+            currentMonth = new Date().toISOString().slice(0, 7);
+            fetchData(currentMonth);
+        };
+        document.getElementById('monthSelect').onchange = (e) => {
+            currentMonth = e.target.value;
+            fetchData(currentMonth);
+        };
+
+        document.getElementById('addBudgetBtn').onclick = async () => {
+            const cat = document.getElementById('budgetCat').value;
+            const amt = parseFloat(document.getElementById('budgetAmt').value);
+            if (cat && amt) {
+                await fetch(`${API_BASE}/budgets/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({month: currentMonth, category: cat, amount: amt})
+                });
+                document.getElementById('budgetCat').value = '';
+                document.getElementById('budgetAmt').value = '';
+                fetchData(currentMonth);
+            }
+        };
+
+        document.getElementById('addExpenseBtn').onclick = async () => {
+            const cat = document.getElementById('expenseCat').value;
+            const amt = parseFloat(document.getElementById('expenseAmt').value);
+            if (cat && amt) {
+                await fetch(`${API_BASE}/expenses/`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({month: currentMonth, category: cat, amount: amt})
+                });
+                document.getElementById('expenseCat').value = '';
+                document.getElementById('expenseAmt').value = '';
+                fetchData(currentMonth);
+            }
+        };
+
+        document.getElementById('updateThresholdBtn').onclick = async () => {
+            const threshold = parseFloat(document.getElementById('thresholdValue').textContent);
+            await fetch(`${API_BASE}/config/threshold`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({threshold})
+            });
+            fetchData(currentMonth);
+        };
+
+        // Threshold slider
+        const slider = document.getElementById('thresholdSlider');
+        const valueSpan = document.getElementById('thresholdValue');
+        slider.oninput = () => valueSpan.textContent = slider.value;
+        
+        // Init
+        fetchData(currentMonth).then(async () => {
+            const thresholdRes = await fetch(`${API_BASE}/config/threshold`);
+            const threshData = await thresholdRes.json();
+            document.getElementById('currentThreshold').textContent = threshData.threshold;
+            slider.value = threshData.threshold;
+            valueSpan.textContent = threshData.threshold;
+            
+            // Populate months
+            const catsRes = await fetch(`${API_BASE}/categories/${currentMonth}`);
+            const months = ['2024-10', '2024-11', currentMonth]; // Add more dynamically if needed
+            document.getElementById('monthSelect').innerHTML = months.map(m => `<option value="${m}">${m}</option>`).join('');
+        });
+    </script>
+</body>
+</html>
