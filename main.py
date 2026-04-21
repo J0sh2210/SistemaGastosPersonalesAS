@@ -21,4 +21,3 @@ def get_db():
 @app.get("/")
 def read_root():
     return {"message": "Bienvenido al Sistema de Gastos Personales API"}
-
