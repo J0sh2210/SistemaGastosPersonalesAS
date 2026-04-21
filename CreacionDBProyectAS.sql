@@ -100,3 +100,44 @@ CREATE TABLE Bitacora (
     Descripcion VARCHAR(255),
     Fecha DATETIME DEFAULT GETDATE()
 )
+-- =============================================
+-- Tabla MetasAhorro
+-- =============================================
+CREATE TABLE MetasAhorro (
+    IdMeta        INT PRIMARY KEY IDENTITY(1,1),
+    IdUsuario     INT NOT NULL,
+    NombreMeta    VARCHAR(100),
+    MontoObjetivo DECIMAL(12,2),
+    FechaLimite   DATE,
+    MontoActual   DECIMAL(12,2)
+)
+
+GO
+
+-- =============================================
+-- SP Crear Meta de Ahorro
+-- =============================================
+CREATE PROCEDURE sp_CrearMetaAhorro
+    @IdUsuario     INT,
+    @NombreMeta    VARCHAR(100),
+    @MontoObjetivo DECIMAL(12,2),
+    @FechaLimite   DATE,
+    @MontoActual   DECIMAL(12,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @MontoObjetivo <= 0
+        THROW 50001, 'Monto objetivo debe ser mayor a cero', 1;
+
+    IF @FechaLimite < CAST(GETDATE() AS DATE)
+        THROW 50002, 'La fecha limite no puede ser anterior a hoy', 1;
+
+    IF @MontoActual < 0
+        THROW 50003, 'El monto actual no puede ser negativo', 1;
+
+    INSERT INTO MetasAhorro (IdUsuario, NombreMeta, MontoObjetivo, FechaLimite, MontoActual)
+    VALUES (@IdUsuario, @NombreMeta, @MontoObjetivo, @FechaLimite, @MontoActual);
+
+    SELECT SCOPE_IDENTITY() AS IdMeta;
+END
