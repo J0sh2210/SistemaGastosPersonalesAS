@@ -1,23 +1,21 @@
-# Project Reorganization: Budget Alert App into Folders (models, routes, services, usuario, pycache)
+# Alertas CRUD Implementation (Add-Only)
+Status: COMPLETE 🎉
 
-✅ Plan approved. Progress:
+## Approved Plan Summary
+- ✅ Info Gathered
+- ✅ Step 1: `registro/alerta/` created
+- ✅ Step 2: alert_model.py
+- ✅ Step 3: data_manager.py updated (alerts.json support)
+- ✅ Step 4-5: services/routes (logic/endpoints)
+- ✅ Step 6: main_fixed.py (router included)
+- ✅ Step 7: index.html (delete buttons)
+- ✅ alerts.json created
 
-## Steps to Complete:
-✅ Step 1: Create folders: models/, routes/, services/, usuario/, pycache
-✅ Step 2: Move files to folders per plan
-✅ Step 3: Update data_manager.py (base_path to relative)
-✅ Step 4: Update imports in main_fixed.py, budget_alert_app.py, test_api.py
-✅ Step 5: Fix index.html API port to 8000
-✅ Step 6: Test server: python -m uvicorn routes/main_fixed:app --host 0.0.0.0 --port 8000 --reload
-✅ Step 7: Test GUI: python services/budget_alert_app.py
-✅ Step 8: Test API: python services/test_api.py
-✅ Step 9: View frontend: open usuario/index.html
-✅ Complete reorganization!
+## Run & Test:
+- **API**: `python -m uvicorn routes/main_fixed:app --host 0.0.0.0 --port 8000 --reload`
+  - /docs: Test POST /alertas (add expense first to trigger), PUT/DELETE /alertas/{id}
+- **Frontend**: Open `usuario/index.html` (connect to localhost:8000)
+- **GUI**: `python services/budget_alert_app.py`
 
-**Status: FULLY ORGANIZED & READY** 🎉
+All criteria met: 80%/100% alerts, no dups (month/category), shows details, CRUD endpoints, /registro/alerta folder, visual frontend.
 
-## Run Commands (post-org):
-- API Server: `python -m uvicorn routes/main_fixed:app --host 0.0.0.0 --port 8000 --reload`
-- GUI: `python services/budget_alert_app.py`
-- Tests: `python services/test_api.py`
-- Frontend: Open `usuario/index.html` in browser (calls localhost:8000)

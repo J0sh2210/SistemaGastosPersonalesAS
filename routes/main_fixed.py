@@ -1,9 +1,11 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.routing import APIRouter
 from pydantic import BaseModel
 from models.data_manager import DataManager
 from typing import Dict, Any, List
 from datetime import datetime
+from registro.alerta.routes.alert_routes import router as alert_router
 
 app = FastAPI(
     title="Alerta de Presupuesto API",
@@ -21,6 +23,9 @@ app.add_middleware(
 )
 
 dm = DataManager()
+
+app.include_router(alert_router)
+
 
 class BudgetItem(BaseModel):
     month: str
@@ -68,7 +73,7 @@ def add_budget(item: BudgetItem):
 @app.post("/expenses/")
 def add_expense(item: BudgetItem):
     # Ensure budget exists
-    if item.month not in dm.budgets or item.category not in dm.budgets[item.month]:
+    if not dm.budget_exists(item.month, item.category):
         raise HTTPException(status_code=400, detail="Budget not found for category. Add budget first.")
     
     alert_triggered = dm.add_expense(item.month, item.category, item.amount)
@@ -76,7 +81,7 @@ def add_expense(item: BudgetItem):
     cat_data = categories[item.category]
     
     msg = f"Gasto agregado: {item.category} - ${item.amount:.2f}"
-    if alert_triggered:
+    if alert_triggered or cat_data["status"] in ["warning", "exceeded"]:
         status = cat_data["status"]
         msg = f"🚨 ALERTA {status.upper()}! Categoría: {item.category}, Gastado: ${cat_data['spent']:.2f} / Presupuesto: ${cat_data['budgeted']:.2f} ({cat_data['percentage']}%)"
     
@@ -89,19 +94,19 @@ def add_expense(item: BudgetItem):
 @app.get("/alerts/{month}")
 def get_alerts(month: str) -> Dict[str, Any]:
     """Lista alertas nuevas (no vistas) para el mes: categoría, % , status."""
-    categories_data = dm.get_categories_data(month)
-    alerts = []
-    for cat, data in categories_data.items():
-        key = f"{month}_{cat}"
-        if key not in dm.alerts_seen and data["status"] in ["warning", "exceeded"]:
-            alerts.append({
-                "category": cat,
-                "spent": data["spent"],
-                "budgeted": data["budgeted"],
-                "percentage": data["percentage"],
-                "status": data["status"]
-            })
-    return {"month": month, "new_alerts": alerts}
+    alerts = dm.get_new_alerts(month)
+    result = []
+    for alert in alerts:
+        result.append({
+            "id": alert["id"],
+            "category": alert["category"],
+            "spent": alert["spent"],
+            "budgeted": alert["budgeted"],
+            "percentage": alert["percentage"],
+            "status": alert["status"]
+        })
+        dm.mark_alert_seen(month, alert["category"])
+    return {"month": month, "new_alerts": result}
 
 @app.get("/config/threshold")
 def get_threshold():
