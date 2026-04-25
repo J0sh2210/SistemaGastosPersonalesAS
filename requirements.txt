@@ -1,8 +1,10 @@
-fastapi
-uvicorn
-sqlalchemy
-pyodbc
+Flask==3.0.3
+SQLAlchemy[pyodbc]==2.0.35
+pyodbc==5.1.0
+FastAPI==0.115.0
+uvicorn[standard]==0.30.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-multipart==0.0.9
+pydantic==2.9.2
 python-dotenv
-passlib[bcrypt]
-python-jose[cryptography]
-python-multipart
