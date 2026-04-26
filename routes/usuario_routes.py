@@ -128,3 +128,31 @@ def actualizar_perfil(
     db.commit()
 
     return {"message": "Perfil actualizado correctamente"}
+
+@router.delete("/cuenta")
+def eliminar_cuenta_usuario(
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(get_current_user)
+):
+    usuario = db.query(Usuario).filter(
+        Usuario.NombreUsuario == usuario_actual
+    ).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    cliente = db.query(Cliente).filter(
+        Cliente.IdCliente == usuario.IdCliente
+    ).first()
+
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    if cliente.Estado == "I":
+        raise HTTPException(status_code=400, detail="El usuario ya está eliminado")
+
+    cliente.Estado = "I"
+
+    db.commit()
+
+    return {"message": "El usuario fue eliminado exitosamente"}
