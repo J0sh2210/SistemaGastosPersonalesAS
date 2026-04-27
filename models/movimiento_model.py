@@ -19,3 +19,6 @@ class EditarCategoriaRequest(BaseModel):
 
 class EditarCategoriaResponse(BaseModel):
     message: str
+
+class DiferenciaResponse(BaseModel):
+    total: float

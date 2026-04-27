@@ -1,12 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import extract
+from sqlalchemy import extract, text
 from database import SessionLocal
 
-from models.movimiento_model import Movimiento, EditarCategoriaRequest, EditarCategoriaResponse
+from models.movimiento_model import Movimiento, EditarCategoriaRequest, EditarCategoriaResponse, DiferenciaResponse
 from models.usuario_model import Usuario, Cliente
 from services.auth_service import get_current_user
-from services.movimientos_service import editar_categoria_movimiento
+from services.movimientos_service import editar_categoria_movimiento, calcular_diferencia
 
 router = APIRouter()
 
@@ -78,9 +78,9 @@ def obtener_movimientos_mensuales(
         "balance": total_ingresos - total_egresos
     }
 
-@router.put("/{idMovimiento}/categoria", response_model=EditarCategoriaResponse)
+@router.put("/Categoria", response_model=EditarCategoriaResponse)
 
-def editar_categoria(idMovimiento: int, request: EditarCategoriaRequest):
+def editar_categoria_Movimiento(idMovimiento: int, request: EditarCategoriaRequest):
     
     resultado = editar_categoria_movimiento(idMovimiento, request.idCategoria)
 
@@ -91,3 +91,7 @@ def editar_categoria(idMovimiento: int, request: EditarCategoriaRequest):
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
 
     return {"message": "Categoría actualizada correctamente"}
+
+@router.get("/diferencia")
+def obtener_diferencia(tipo: str = Query(..., enum=["mes", "anio"])):
+    return calcular_diferencia(tipo)
