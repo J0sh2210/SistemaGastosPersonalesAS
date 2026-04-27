@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, DECIMAL
 from database import Base
+from pydantic import BaseModel
 
 
 class Movimiento(Base):
@@ -11,3 +12,10 @@ class Movimiento(Base):
     FechaMovimiento = Column(DateTime)
     IdCliente = Column(Integer, ForeignKey("Cliente.IdCliente"))
     IdTipo = Column(Integer, ForeignKey("TipoMovimiento.IdTipo"))
+
+class EditarCategoriaRequest(BaseModel):
+    idCategoria: int
+
+
+class EditarCategoriaResponse(BaseModel):
+    message: str
