@@ -1,13 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-
+from typing import List
+from datetime import date
 from database import SessionLocal
 from models.gasto_recurrente_model import GastoRecurrente
+from models.schemas import CrearGastoRecurrente, LeerGastoRecurrente, ActualizarGastoRecurrente
 
-router = APIRouter(
-    prefix="/recurring-expenses",
-    tags=["Gastos Recurrentes"]
-)
+router = APIRouter()
 
 def get_db():
     db = SessionLocal()
@@ -16,22 +15,62 @@ def get_db():
     finally:
         db.close()
 
-@router.delete("/{id}")
-def eliminar_gasto_recurrente(id: int, db: Session = Depends(get_db)):
+@router.post("/", response_model=LeerGastoRecurrente)
+def crear_gasto_recurrente(gasto: CrearGastoRecurrente, db: Session = Depends(get_db)):
+    nuevo = GastoRecurrente(
+        Concepto=gasto.Concepto,
+        Monto=gasto.Monto,
+        FechaInicio=gasto.FechaInicio,
+        Frecuencia=gasto.Frecuencia.value,
+        IdCliente=gasto.IdCliente,
+        Activo=True
+    )
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
 
-    gasto = db.query(GastoRecurrente).filter(
-        GastoRecurrente.IdGastoRecurrente == id
-    ).first()
+@router.get("/", response_model=List[LeerGastoRecurrente])
+def listar_gastos_recurrentes(db: Session = Depends(get_db)):
+    return db.query(GastoRecurrente).filter(GastoRecurrente.Activo == True).all()
 
-    if not gasto:
-        raise HTTPException(
-            status_code=404,
-            detail="Gasto no encontrado"
-        )
+@router.put("/{id}", response_model=LeerGastoRecurrente)
+def actualizar_gasto_recurrente(id: int, datos: ActualizarGastoRecurrente, db: Session = Depends(get_db)):
+    gasto_actual = db.query(GastoRecurrente).filter(GastoRecurrente.IdGastoRecurrente == id, GastoRecurrente.Activo == True).first()
+    if not gasto_actual:
+        raise HTTPException(status_code=404, detail="Gasto no encontrado")
 
-    gasto.Activo = False
+    gasto_actual.Activo = False # Desactivado lógico
     db.commit()
 
-    return {
-        "message": f"Gasto {id} eliminado correctamente"
-    }
+    nuevo_gasto = GastoRecurrente(
+        Concepto=datos.Concepto or gasto_actual.Concepto,
+        Monto=datos.Monto or gasto_actual.Monto,
+        FechaInicio=date.today(),
+        Frecuencia=datos.Frecuencia.value if datos.Frecuencia else gasto_actual.Frecuencia,
+        IdCliente=gasto_actual.IdCliente,
+        Activo=True
+    )
+    db.add(nuevo_gasto)
+    db.commit()
+    db.refresh(nuevo_gasto)
+    return nuevo_gasto
+
+@router.delete("/{id}")
+def eliminar_gasto(id: int, db: Session = Depends(get_db)):
+    gasto = db.query(GastoRecurrente).filter(GastoRecurrente.IdGastoRecurrente == id).first()
+    if not gasto:
+        raise HTTPException(status_code=404, detail="Gasto no encontrado")
+    gasto.Activo = False
+    db.commit()
+    return {"message": "Gasto desactivado"}
+
+@router.get("/generate-monthly")
+def generar_gastos_mensuales(db: Session = Depends(get_db)):
+    hoy = date.today()
+    gastos = db.query(GastoRecurrente).filter(GastoRecurrente.Activo == True).all()
+    generados = []
+    for gasto in gastos:
+        if gasto.FechaInicio.day == hoy.day:
+            generados.append({"Concepto": gasto.Concepto, "Monto": float(gasto.Monto), "Fecha": hoy})
+    return {"message": "Gastos procesados", "data": generados}
