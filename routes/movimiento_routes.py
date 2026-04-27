@@ -3,9 +3,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy import extract
 from database import SessionLocal
 
-from models.movimiento_model import Movimiento
+from models.movimiento_model import Movimiento, EditarCategoriaRequest, EditarCategoriaResponse
 from models.usuario_model import Usuario, Cliente
 from services.auth_service import get_current_user
+from services.movimientos_service import editar_categoria_movimiento
 
 router = APIRouter()
 
@@ -76,3 +77,17 @@ def obtener_movimientos_mensuales(
         "totalEgresos": total_egresos,
         "balance": total_ingresos - total_egresos
     }
+
+@router.put("/{idMovimiento}/categoria", response_model=EditarCategoriaResponse)
+
+def editar_categoria(idMovimiento: int, request: EditarCategoriaRequest):
+    
+    resultado = editar_categoria_movimiento(idMovimiento, request.idCategoria)
+
+    if resultado == "MOVIMIENTO_NO_EXISTE":
+        raise HTTPException(status_code=404, detail="Movimiento no encontrado")
+
+    if resultado == "CATEGORIA_NO_EXISTE":
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+
+    return {"message": "Categoría actualizada correctamente"}
