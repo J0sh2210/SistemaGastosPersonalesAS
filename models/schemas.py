@@ -6,6 +6,32 @@ from datetime import date
 from typing import Optional
 from enum import Enum
 
+from pydantic import BaseModel, Field
+from datetime import datetime
+
+# Clase base con lo que comparten creación y edición
+class IngresoBase(BaseModel):
+    Concepto: str = Field(..., min_length=1, max_length=30)
+    Monto: float = Field(..., gt=0)
+
+# Al crear un ingreso, necesitamos saber de qué cliente es
+class IngresoCreate(IngresoBase):
+    IdCliente: int
+
+# Al editar, solo recibimos concepto y monto (heredados de IngresoBase)
+class IngresoUpdate(IngresoBase):
+    pass
+
+# Lo que la API le responde al Frontend
+class IngresoResponse(IngresoBase):
+    IdMovimiento: int
+    FechaMovimiento: datetime
+    IdCliente: int
+    IdTipo: int
+
+    class Config:
+        from_attributes = True
+
 class GastoBase(BaseModel):
     Concepto: str = Field(..., min_length=1, max_length=30)
     Monto: float = Field(..., gt=0)
