@@ -72,6 +72,7 @@ ADD Activo BIT NOT NULL DEFAULT 1;
 
 select * from GastoRecurrente
 
+<<<<<<< Updated upstream
 --SP agregar movimiento y editar
 
 USE SistemasGastosAS;
@@ -114,5 +115,31 @@ BEGIN
     SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo 
     FROM Movimiento 
     WHERE IdMovimiento = @IdMovimiento;
+=======
+--Ver movimientos mes actual
+USE SistemasGastosAS;
+GO
+
+CREATE PROCEDURE sp_ObtenerMovimientosMesActual
+    @IdCliente INT
+AS
+BEGIN
+    -- Selecciona los movimientos y hace un JOIN para traer el nombre del tipo (Ingreso/Egreso)
+    SELECT 
+        m.IdMovimiento,
+        m.Concepto,
+        m.Monto,
+        m.FechaMovimiento,
+        m.IdCliente,
+        m.IdTipo,
+        t.Nombre AS NombreTipoMovimiento
+    FROM Movimiento m
+    INNER JOIN TipoMovimiento t ON m.IdTipo = t.IdTipo
+    WHERE m.IdCliente = @IdCliente
+      -- Filtro estricto para el mes y año actuales
+      AND MONTH(m.FechaMovimiento) = MONTH(GETDATE())
+      AND YEAR(m.FechaMovimiento) = YEAR(GETDATE())
+    ORDER BY m.FechaMovimiento DESC;
+>>>>>>> Stashed changes
 END;
 GO

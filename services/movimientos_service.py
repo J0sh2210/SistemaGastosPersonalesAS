@@ -1,6 +1,19 @@
 from database import SessionLocal
 from sqlalchemy import text
 
+from sqlalchemy.orm import Session
+from sqlalchemy import text
+
+class MovimientoService:
+    @staticmethod
+    def obtener_movimientos_mes_actual(db: Session, id_cliente: int):
+        # Ejecutamos el SP pasando el IdCliente
+        query = text("EXEC sp_ObtenerMovimientosMesActual @IdCliente = :IdCliente")
+        result = db.execute(query, {"IdCliente": id_cliente}).fetchall()
+        
+        # Mapeamos los resultados para que Pydantic los pueda leer fácilmente
+        return [row._mapping for row in result]
+
 def editar_categoria_movimiento(idMovimiento: int, idCategoria: int):
     db = SessionLocal()
     try:

@@ -7,6 +7,8 @@ from models.movimiento_model import Movimiento, EditarCategoriaRequest, EditarCa
 from models.usuario_model import Usuario, Cliente
 from services.auth_service import get_current_user
 from services.movimientos_service import editar_categoria_movimiento, calcular_diferencia
+from models.schemas import MovimientoMesResponse
+from services.movimientos_service import MovimientoService
 
 router = APIRouter()
 
@@ -95,3 +97,8 @@ def editar_categoria_Movimiento(idMovimiento: int, request: EditarCategoriaReque
 @router.get("/diferencia")
 def obtener_diferencia(tipo: str = Query(..., enum=["mes", "anio"])):
     return calcular_diferencia(tipo)
+
+@router.get("/mes-actual/{id_cliente}", response_model=list[MovimientoMesResponse])
+def obtener_movimientos_mes(id_cliente: int, db: Session = Depends(get_db)):
+    movimientos = MovimientoService.obtener_movimientos_mes_actual(db, id_cliente)
+    return movimientos

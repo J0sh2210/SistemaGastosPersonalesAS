@@ -28,6 +28,14 @@ class IngresoResponse(IngresoBase):
     FechaMovimiento: datetime
     IdCliente: int
     IdTipo: int
+class MovimientoMesResponse(BaseModel):
+    IdMovimiento: int
+    Concepto: str
+    Monto: float
+    FechaMovimiento: datetime
+    IdCliente: int
+    IdTipo: int
+    NombreTipoMovimiento: str  # Devolverá "Ingreso" o "Egreso"
 
     class Config:
         from_attributes = True
