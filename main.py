@@ -4,7 +4,8 @@ from database import SessionLocal
 from routes.categoria_routes import router as categoria_router
 from routes.usuario_routes import router as usuario_router
 from routes.movimiento_routes import router as movimiento_router
-from routes.gasto_recurrente_routes import router as gasto_router
+from routes.gasto_recurrente_routes import router as gastorecu_router
+from routes.gasto_routes import router as gasto_router
 
 app = FastAPI(title="Sistema de Gastos Personales API")
 
@@ -14,7 +15,8 @@ app = FastAPI(title="Sistema de Gastos Personales API")
 app.include_router(categoria_router)
 app.include_router(usuario_router, prefix="/usuarios")
 app.include_router(movimiento_router, prefix="/movimientos", tags=["Movimientos"])
-app.include_router(gasto_router)
+app.include_router(gasto_router, prefix="/gastos", tags=["Movimientos"])
+app.include_router(gastorecu_router, prefix="/gastos-recurrentes", tags=["Gastos Recurrentes"])
 
 # =====================================
 # SESION BD
