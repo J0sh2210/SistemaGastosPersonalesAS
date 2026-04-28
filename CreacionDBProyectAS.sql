@@ -1,7 +1,7 @@
-CREATE DATABASE SistemasGastosAS;
-GO
-USE SistemasGastosAS;
-GO
+--CREATE DATABASE SistemasGastosAS
+
+--USE SistemasGastosAS;
+
 
 CREATE TABLE Cliente (
   IdCliente INT PRIMARY KEY IDENTITY(1,1),
@@ -71,3 +71,48 @@ ALTER TABLE GastoRecurrente
 ADD Activo BIT NOT NULL DEFAULT 1;
 
 select * from GastoRecurrente
+
+--SP agregar movimiento y editar
+
+USE SistemasGastosAS;
+GO
+
+-- 1. SP para Registrar un Ingreso (Fuerza el IdTipo = 1)
+CREATE PROCEDURE sp_RegistrarIngreso
+    @Concepto VARCHAR(30),
+    @Monto DECIMAL(12,2),
+    @IdCliente INT
+AS
+BEGIN
+    DECLARE @NuevoId INT;
+    
+    INSERT INTO Movimiento (Concepto, Monto, FechaMovimiento, IdCliente, IdTipo)
+    VALUES (@Concepto, @Monto, GETDATE(), @IdCliente, 1);
+    
+    SET @NuevoId = SCOPE_IDENTITY();
+    
+    -- Retornamos el registro recién creado para que la API lo devuelva
+    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo 
+    FROM Movimiento 
+    WHERE IdMovimiento = @NuevoId;
+END;
+GO
+
+-- 2. SP para Editar un Ingreso (Asegurando que solo afecte a IdTipo = 1)
+CREATE PROCEDURE sp_EditarIngreso
+    @IdMovimiento INT,
+    @Concepto VARCHAR(30),
+    @Monto DECIMAL(12,2)
+AS
+BEGIN
+    UPDATE Movimiento
+    SET Concepto = @Concepto,
+        Monto = @Monto
+    WHERE IdMovimiento = @IdMovimiento AND IdTipo = 1;
+    
+    -- Retornamos el registro actualizado (si no existe o no era ingreso, no devuelve nada)
+    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo 
+    FROM Movimiento 
+    WHERE IdMovimiento = @IdMovimiento;
+END;
+GO
