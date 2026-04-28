@@ -1,3 +1,8 @@
+<<<<<<< HEAD
+requests
+fastapi==0.135.3
+uvicorn[standard]==0.44.0
+=======
 Flask==3.0.3
 SQLAlchemy[pyodbc]==2.0.35
 pyodbc==5.1.0
@@ -9,3 +14,4 @@ python-multipart==0.0.9
 pydantic==2.9.2
 python-dotenv
 python-multipart
+>>>>>>> 7b7d2db89f8d2d0836a01e7d1efb82c6529ece65
