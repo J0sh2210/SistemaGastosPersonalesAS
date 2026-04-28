@@ -7,6 +7,7 @@ from routes.movimiento_routes import router as movimiento_router
 from routes.gasto_recurrente_routes import router as gastorecu_router
 from routes.gasto_routes import router as gasto_router
 from routes.ingreso_routes import router as ingreso_router
+from routes.filtrado_routes import router as filtrado_router
 
 
 from routes.movimiento_routes import router as movimiento_router
@@ -23,6 +24,7 @@ app.include_router(gasto_router, prefix="/gastos", tags=["Movimientos"])
 app.include_router(gastorecu_router, prefix="/gastos-recurrentes", tags=["Gastos Recurrentes"])
 # ... dentro de la zona donde incluyes tus routers:
 app.include_router(ingreso_router)
+app.include_router(filtrado_router, prefix="/movimientos", tags=["Filtrado"])
 app.include_router(movimiento_router)
 
 # =====================================
