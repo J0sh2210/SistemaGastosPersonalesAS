@@ -1,6 +1,4 @@
 from database import SessionLocal
-from sqlalchemy import text
-
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -116,3 +114,21 @@ def calcular_diferencia(tipo: str):
             })
 
     return data
+
+def filtrar_movimientos(db: Session, id_cliente, id_tipo=None, fecha_inicio=None, fecha_fin=None):
+    query = text("""
+        EXEC sp_FiltrarMovimientos 
+            @IdCliente = :id_cliente,
+            @IdTipo = :id_tipo,
+            @FechaInicio = :fecha_inicio,
+            @FechaFin = :fecha_fin
+    """)
+
+    result = db.execute(query, {
+        "id_cliente": id_cliente,
+        "id_tipo": id_tipo,
+        "fecha_inicio": fecha_inicio,
+        "fecha_fin": fecha_fin
+    }).fetchall()
+
+    return [dict(row._mapping) for row in result]
