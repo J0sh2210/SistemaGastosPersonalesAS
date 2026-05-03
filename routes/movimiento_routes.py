@@ -102,3 +102,48 @@ def obtener_diferencia(tipo: str = Query(..., enum=["mes", "anio"])):
 def obtener_movimientos_mes(id_cliente: int, db: Session = Depends(get_db)):
     movimientos = MovimientoService.obtener_movimientos_mes_actual(db, id_cliente)
     return movimientos
+
+@router.get("/informe")
+def generar_informe(
+    mes: int,
+    anio: int,
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(get_current_user)
+):
+    usuario = db.query(Usuario).filter(
+        Usuario.NombreUsuario == usuario_actual
+    ).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    cliente = db.query(Cliente).filter(
+        Cliente.IdCliente == usuario.IdCliente
+    ).first()
+
+    if not cliente:
+        raise HTTPException(status_code=404, detail="Cliente no encontrado")
+
+    movimientos = db.query(Movimiento).filter(
+        Movimiento.IdCliente == cliente.IdCliente,
+        extract("month", Movimiento.FechaMovimiento) == mes,
+        extract("year", Movimiento.FechaMovimiento) == anio
+    ).all()
+
+    total_ingresos = 0
+    total_egresos = 0
+
+    for mov in movimientos:
+        if mov.IdTipo == 1:
+            total_ingresos += float(mov.Monto)
+        elif mov.IdTipo == 2:
+            total_egresos += float(mov.Monto)
+
+    return {
+        "usuario": usuario.NombreUsuario,
+        "mes": mes,
+        "anio": anio,
+        "totalIngresos": total_ingresos,
+        "totalEgresos": total_egresos,
+        "balance": total_ingresos - total_egresos
+    }
