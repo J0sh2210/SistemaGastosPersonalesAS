@@ -3,15 +3,16 @@ from sqlalchemy.orm import Session
 from sqlalchemy import extract, text
 from database import SessionLocal
 
+
 from models.movimiento_model import Movimiento, EditarCategoriaRequest, EditarCategoriaResponse, DiferenciaResponse
 from models.usuario_model import Usuario, Cliente
 from services.auth_service import get_current_user
-from services.movimientos_service import editar_categoria_movimiento, calcular_diferencia
+from services.movimientos_service import editar_categoria_movimiento, calcular_diferencia, filtrar_movimientos
 from models.schemas import MovimientoMesResponse
 from services.movimientos_service import MovimientoService
+from datetime import date
 
-router = APIRouter()
-
+router = APIRouter(tags=["Movimientos"])
 
 def get_db():
     db = SessionLocal()
@@ -146,4 +147,48 @@ def generar_informe(
         "totalIngresos": total_ingresos,
         "totalEgresos": total_egresos,
         "balance": total_ingresos - total_egresos
+    }
+
+""" Filtra movimientos por tipo y rango de fechas.
+Permite consultas dinámicas del historial del usuario autenticado. """
+
+@router.get("/filtrar", summary="Filtrar historial de movimientos")
+def filtrar_historial_movimientos(
+    id_tipo: int = None,
+    fecha_inicio: date = None,
+    fecha_fin: date = None,
+    db: Session = Depends(get_db),
+    usuario_actual: str = Depends(get_current_user)
+):
+    if fecha_inicio and fecha_fin and fecha_inicio > fecha_fin:
+        raise HTTPException(
+            status_code=400,
+            detail="La fecha_inicio no puede ser mayor que fecha_fin"
+        )
+
+    usuario = db.query(Usuario).filter(
+        Usuario.NombreUsuario == usuario_actual
+    ).first()
+
+    if not usuario:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    resultado = filtrar_movimientos(
+        db,
+        usuario.IdCliente,
+        id_tipo,
+        fecha_inicio,
+        fecha_fin
+    )
+
+    if not resultado:
+        return {
+            "total": 0,
+            "movimientos": [],
+            "message": "No se encontraron movimientos"
+        }
+
+    return {
+        "total": len(resultado),
+        "movimientos": resultado
     }
