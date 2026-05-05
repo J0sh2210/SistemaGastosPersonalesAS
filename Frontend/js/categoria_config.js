@@ -40,6 +40,9 @@ async function listarCategorias() {
                             onclick="prepararEdicion(${idCat}, '${nombre}', '${tipoMov}', '${clasificacion}')">
                             ✏️
                         </button>
+                        <button class="btn-delete" onclick="eliminarCategoria(${idCat}, '${nombre}')">
+                          🗑️
+                        </button>
                     </td>
                 </tr>
             `;
@@ -93,9 +96,11 @@ document.getElementById('form-edit-categoria').addEventListener('submit', async 
     });
 
     if (response.ok) {
-        alert("✅ Cambios guardados correctamente");
+        mostrarMensaje("✏️ Categoría actualizada correctamente", "success");
         listarCategorias();
         ocultarSecciones();
+    }else {
+    mostrarMensaje("❌ Error al actualizar categoría", "error");
     }
 });
 
@@ -116,10 +121,12 @@ document.getElementById('form-categoria').addEventListener('submit', async (e) =
     });
 
     if (response.ok) {
-        alert("🌟 ¡Nueva categoría guardada!");
+        mostrarMensaje("🌟 Categoría creada correctamente", "success");
         e.target.reset();
         listarCategorias();
         ocultarSecciones();
+    }else {
+    mostrarMensaje("❌ Error al crear categoría", "error");
     }
 });
 
@@ -137,4 +144,43 @@ function mostrarSeccion(tipo) {
 function ocultarSecciones() {
     document.getElementById('seccion-crear').classList.add('hidden');
     document.getElementById('seccion-editar').classList.add('hidden');
+}
+
+async function eliminarCategoria(id, nombre) {
+    const confirmar = confirm(`¿Seguro que deseas eliminar "${nombre}"?`);
+    if (!confirmar) return;
+
+    try {
+        const response = await fetch(`${API_URL}/categorias/${id}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        // 🔴 Si el backend manda error → mostrarlo
+        if (data.error) {
+            mostrarMensaje(data.error, "error");
+            return;
+        }
+
+        // 🟢 Si todo salió bien
+        mostrarMensaje("Categoría eliminada correctamente", "success");
+        listarCategorias();
+
+    } catch (error) {
+        console.error(error);
+        mostrarMensaje("Error de conexión", "error");
+    }
+}
+
+function mostrarMensaje(texto, tipo) {
+    const mensaje = document.createElement("div");
+    mensaje.className = `toast ${tipo}`;
+    mensaje.textContent = texto;
+
+    document.body.appendChild(mensaje);
+
+    setTimeout(() => {
+        mensaje.remove();
+    }, 3000);
 }
