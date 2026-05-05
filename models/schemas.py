@@ -82,3 +82,22 @@ class ActualizarGastoRecurrente(BaseModel):
     Concepto: Optional[str] = None
     Monto: Optional[PositiveFloat] = None
     Frecuencia: Optional[FrecuenciaEnum] = None
+
+class PresupuestoBase(BaseModel):
+    IdCliente: int = Field(..., gt=0)
+    Anio: int
+    Mes: int = Field(..., ge=1, le=12)
+    MontoPresupuestado: PositiveFloat = Field(..., gt=0)
+
+class PresupuestoCreate(PresupuestoBase):
+    pass
+
+class PresupuestoUpdate(PresupuestoBase):
+    pass
+
+class PresupuestoResponse(PresupuestoBase):
+    IdPresupuesto: int
+    FechaCreacion: datetime
+
+    class Config:
+        from_attributes = True
