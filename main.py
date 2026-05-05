@@ -8,6 +8,7 @@ from routes.gasto_recurrente_routes import router as gastorecu_router
 from routes.gasto_routes import router as gasto_router
 from routes.ingreso_routes import router as ingreso_router
 from routes.filtrado_routes import router as filtrado_router
+from fastapi.middleware.cors import CORSMiddleware
 
 
 from routes.movimiento_routes import router as movimiento_router
@@ -17,6 +18,18 @@ app = FastAPI(title="Sistema de Gastos Personales API")
 # =====================================
 # RUTAS
 # =====================================
+
+
+# Permitir CORS para que el frontend pueda conectarse
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # En producción debes poner la URL de tu frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 app.include_router(categoria_router)
 app.include_router(usuario_router, prefix="/usuarios")
 app.include_router(movimiento_router, prefix="/movimientos", tags=["Movimientos"])
@@ -40,6 +53,8 @@ def get_db():
 # =====================================
 # INICIO
 # =====================================
+
+
 @app.get("/")
 def read_root():
     return {"message": "Bienvenido al Sistema de Gastos Personales API"}

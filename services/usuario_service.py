@@ -15,7 +15,7 @@ def crear_usuario(db: Session, username, password, nombre, apellido):
 
     cuenta = Usuario(
         NombreUsuario=username,
-        Contraseña=hash_password(password),
+        Contrasena=hash_password(password),
         IdCliente=cliente.IdCliente
     )
 
