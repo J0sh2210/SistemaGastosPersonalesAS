@@ -1,0 +1,66 @@
+/* categoria_style.css - Basado en tu paleta de colores fríos */
+
+.container-gestion {
+    max-width: 480px !important; /* Un poco más ancho para los campos en fila */
+}
+
+.label-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 5px;
+    text-align: left;
+}
+
+.label-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    margin-left: 2px;
+}
+
+.divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 25px 0;
+    position: relative;
+}
+
+.divider::after {
+    content: "Opciones";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    padding: 0 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* DISEÑO PARA EL BOTÓN DE NAVEGACIÓN (VOLVER) */
+.btn-nav {
+    background-color: #f0f9ff; /* Celeste muy suave */
+    color: #0284c7;           /* Azul principal de tu paleta */
+    border: 1px solid #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(2, 132, 199, 0.05);
+}
+
+.btn-nav:hover {
+    background-color: #0284c7;
+    color: white;
+    transform: translateY(-2px); /* Efecto de levante */
+    box-shadow: 0 6px 12px rgba(2, 132, 199, 0.15);
+}
+
+.btn-nav span {
+    font-size: 1.1rem;
+}
