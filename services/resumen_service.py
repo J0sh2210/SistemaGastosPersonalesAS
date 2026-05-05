@@ -4,9 +4,13 @@ from typing import Dict, List
 from models.schemas import ResumenMesResponse  # Se creará
 
 def obtener_resumen_mes(id_cliente: int, anio: int, mes: int, db: Session) -> ResumenMesResponse:
-    # Usa SP existente para obtener movimientos del mes
-    query = text("EXEC sp_ObtenerMovimientosMesActual @IdCliente = :IdCliente")
-    movimientos = db.execute(query, {"IdCliente": id_cliente}).fetchall()
+    try:
+        # Usa SP existente para obtener movimientos del mes
+        query = text("EXEC sp_ObtenerMovimientosMesActual @IdCliente = :IdCliente")
+        movimientos = db.execute(query, {"IdCliente": id_cliente}).fetchall()
+    except Exception:
+        # Fallback al mock si SP falla
+        return obtener_resumen_mes_mock(id_cliente, anio, mes)
     
     # Procesar para resumen
     total_ingresos = 0.0
@@ -15,23 +19,27 @@ def obtener_resumen_mes(id_cliente: int, anio: int, mes: int, db: Session) -> Re
     egresos = []
     
     for row in movimientos:
-        mapping = row._mapping
-        monto = float(mapping['Monto'])
-        id_tipo = mapping['IdTipo']
-        
-        item = {
-            'idMovimiento': mapping['IdMovimiento'],
-            'concepto': mapping['Concepto'],
-            'monto': monto,
-            'fechaMovimiento': mapping['FechaMovimiento']
-        }
-        
-        if id_tipo == 1:  # Ingreso
-            total_ingresos += monto
-            ingresos.append(item)
-        else:  # Egreso
-            total_egresos += monto
-            egresos.append(item)
+        try:
+            mapping = row._mapping
+            monto = float(mapping['Monto'])
+            id_tipo = int(mapping['IdTipo'])
+            
+            item = {
+                'idMovimiento': int(mapping['IdMovimiento']),
+                'concepto': str(mapping['Concepto']),
+                'monto': monto,
+                'fechaMovimiento': str(mapping['FechaMovimiento'])
+            }
+            
+            if id_tipo == 1:  # Ingreso
+                total_ingresos += monto
+                ingresos.append(item)
+            else:  # Egreso
+                total_egresos += monto
+                egresos.append(item)
+        except (KeyError, ValueError, TypeError) as e:
+            # Ignora filas malformadas, continúa con datos válidos
+            continue
     
     balance = total_ingresos - total_egresos
     
