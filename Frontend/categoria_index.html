@@ -10,37 +10,84 @@
 <body>
 
     <div class="container container-gestion">
-        <h2>Nueva Categoría</h2>
+        <h2>Gestión de Categorías</h2>
+
+        <div id="visualizacion-section">
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Tipo Mov.</th>
+                            <th>Clasificación</th> 
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-categorias">
+                        </tbody>
+                </table>
+            </div>
+        </div>
         
-        <form id="form-categoria" class="form-content active">
-            <div class="label-group">
-                <span class="label-text">Nombre de la Categoría</span>
-                <input type="text" id="cat-nombre" placeholder="Ej: Alimentación, Salario..." required>
-            </div>
-            
-            <div class="row">
-                <div class="label-group" style="flex:1">
-                    <span class="label-text">Movimiento (ID)</span>
-                    <input type="number" id="cat-tipo-mov" placeholder="1: Ing, 2: Gas" required>
-                </div>
-                <div class="label-group" style="flex:1">
-                    <span class="label-text">Clasificación (ID)</span>
-                    <input type="number" id="cat-tipo-cat" placeholder="ID Tipo" required>
-                </div>
-            </div>
+        <div class="divider"></div>
 
-            <button type="submit" class="btn">Guardar Categoría</button>
-            <p id="cat-msg" class="msg"></p>
-        </form>
+        <div class="actions">
+            <button class="btn btn-nav" onclick="mostrarSeccion('crear')">
+                <span>➕</span> Crear Nueva Categoría
+            </button>
+            <button onclick="window.location.href='usuario_index.html'" class="btn btn-outline">
+                <span>⬅️</span> Volver al Perfil
+            </button>
+        </div>
 
-            <div class="divider"></div>
+        <div id="seccion-crear" class="hidden section-form">
+            <h3>Crear Categoría</h3>
+            <form id="form-categoria" class="form-content active">
+             <input type="text" id="cat-nombre" placeholder="Nombre de Categoría" required>
+        <div class="row">
+            <select id="cat-tipo-mov" required>
+                <option value="" disabled selected>Tipo Movimiento</option>
+                <option value="1">💰 Ingreso</option>
+                <option value="2">💸 Egreso</option>
+            </select>
+            <select id="cat-tipo-cat" required>
+                <option value="" disabled selected>Tipo Categoría</option>
+                <option value="1">📌 Fijo</option>
+                <option value="2">🔄 Variable</option>
+                <option value="3">🐜 Hormiga</option>
+                <option value="4">📈 Inversión</option>
+            </select>
+        </div>
+        <button type="submit" class="btn">Guardar Categoría</button>
+        <button type="button" class="btn btn-outline" onclick="ocultarSecciones()">
+            Cancelar
+        </button>
+    </form>
+</div>
 
-                <div class="actions">
-                    <button onclick="window.location.href='usuario_index.html'" class="btn btn-nav">
-                    <span>⬅️</span> Volver al Perfil
-                    </button>
-                </div>
-    </div>
+<div id="seccion-editar" class="hidden section-form">
+    <h3>Editar Categoría</h3>
+    <form id="form-edit-categoria" class="form-content active">
+        <input type="hidden" id="edit-id"> 
+        <input type="text" id="edit-nombre" placeholder="Nuevo Nombre">
+        <div class="row">
+            <select id="edit-tipo-mov">
+                <option value="1">💰 Ingreso</option>
+                <option value="2">💸 Egreso</option>
+            </select>
+            <select id="edit-tipo-cat">
+                <option value="1">📌 Fijo</option>
+                <option value="2">🔄 Variable</option>
+                <option value="3">🐜 Hormiga</option>
+                <option value="4">📈 Inversión</option>
+            </select>
+        </div>
+        <div class="row">
+            <button type="submit" class="btn">Actualizar Datos</button>
+            <button type="button" class="btn btn-outline" onclick="ocultarSecciones()">Cancelar</button>
+        </div>
+    </form>
+</div>
 
     <script src="js/categoria_config.js"></script>
 </body>
