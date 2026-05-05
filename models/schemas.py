@@ -101,3 +101,20 @@ class PresupuestoResponse(PresupuestoBase):
 
     class Config:
         from_attributes = True
+
+from typing import List
+from pydantic import BaseModel
+from datetime import datetime
+
+class ResumenMesResponse(BaseModel):
+    anio: int
+    mes: int
+    idCliente: int
+    totalIngresos: float
+    totalEgresos: float
+    balance: float
+    ingresos: List[dict]
+    egresos: List[dict]
+
+    class Config:
+        from_attributes = True
