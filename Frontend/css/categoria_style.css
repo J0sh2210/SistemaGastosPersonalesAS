@@ -1,14 +1,46 @@
-/* categoria_style.css - Basado en tu paleta de colores fríos */
+/* categoria_style.css - Gestión de Categorías */
 
-.container-gestion {
-    max-width: 480px !important; /* Un poco más ancho para los campos en fila */
+.container-gestion { 
+    max-width: 550px !important; 
 }
 
+/* Tabla de Visualización */
+.table-container {
+    width: 100%;
+    margin-top: 15px;
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    padding: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+th {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    border-bottom: 2px solid var(--border-color);
+    padding: 10px 5px;
+}
+
+td {
+    padding: 12px 5px;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* Etiquetas y Grupos */
 .label-group {
     display: flex;
     flex-direction: column;
     gap: 5px;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     text-align: left;
 }
 
@@ -16,51 +48,68 @@
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-muted);
-    margin-left: 2px;
 }
 
-.divider {
-    height: 1px;
-    background-color: var(--border-color);
-    margin: 25px 0;
-    position: relative;
+/* Secciones Ocultas (Crear/Editar) */
+.section-form {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    animation: slideDown 0.3s ease-out;
 }
 
-.divider::after {
-    content: "Opciones";
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    padding: 0 10px;
-    font-size: 0.7rem;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 1px;
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* DISEÑO PARA EL BOTÓN DE NAVEGACIÓN (VOLVER) */
+/* Botón de Navegación (Volver/Admin) */
 .btn-nav {
-    background-color: #f0f9ff; /* Celeste muy suave */
-    color: #0284c7;           /* Azul principal de tu paleta */
+    background-color: #f0f9ff;
+    color: #0284c7;
     border: 1px solid #0284c7;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 10px;
     width: 100%;
+    margin-bottom: 10px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 6px rgba(2, 132, 199, 0.05);
 }
 
 .btn-nav:hover {
     background-color: #0284c7;
     color: white;
-    transform: translateY(-2px); /* Efecto de levante */
-    box-shadow: 0 6px 12px rgba(2, 132, 199, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(2, 132, 199, 0.15);
 }
 
-.btn-nav span {
-    font-size: 1.1rem;
+.btn-edit {
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+    display: inline-block;
+}
+
+.btn-edit:hover {
+    transform: scale(1.2);
+}
+
+.divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 25px 0;
+}
+
+td small {
+    display: block;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+tr td:first-child {
+    color: var(--primary);
+    font-weight: 600;
 }
