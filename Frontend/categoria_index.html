@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Categorías</title>
+    <link rel="stylesheet" href="css/usuario_style.css">
+    <link rel="stylesheet" href="css/categoria_style.css">
+</head>
+<body>
+
+    <div class="container container-gestion">
+        <h2>Nueva Categoría</h2>
+        
+        <form id="form-categoria" class="form-content active">
+            <div class="label-group">
+                <span class="label-text">Nombre de la Categoría</span>
+                <input type="text" id="cat-nombre" placeholder="Ej: Alimentación, Salario..." required>
+            </div>
+            
+            <div class="row">
+                <div class="label-group" style="flex:1">
+                    <span class="label-text">Movimiento (ID)</span>
+                    <input type="number" id="cat-tipo-mov" placeholder="1: Ing, 2: Gas" required>
+                </div>
+                <div class="label-group" style="flex:1">
+                    <span class="label-text">Clasificación (ID)</span>
+                    <input type="number" id="cat-tipo-cat" placeholder="ID Tipo" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Guardar Categoría</button>
+            <p id="cat-msg" class="msg"></p>
+        </form>
+
+            <div class="divider"></div>
+
+                <div class="actions">
+                    <button onclick="window.location.href='usuario_index.html'" class="btn btn-nav">
+                    <span>⬅️</span> Volver al Perfil
+                    </button>
+                </div>
+    </div>
+
+    <script src="js/categoria_config.js"></script>
+</body>
+</html>

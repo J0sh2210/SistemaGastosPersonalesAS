@@ -144,3 +144,26 @@ input:focus {
 /* Mensajes */
 .error-msg { color: var(--error); font-size: 0.9rem; text-align: center; }
 .msg { color: var(--primary); font-size: 0.9rem; text-align: center; }
+
+/* DISEÑO ESPECÍFICO PARA EL BOTÓN DE NAVEGACIÓN */
+.btn-nav {
+    background-color: #f0f9ff; /* Celeste muy suave */
+    color: #0284c7;           /* Azul principal */
+    border: 1px solid #0284c7;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 4px 6px rgba(2, 132, 199, 0.05);
+}
+
+.btn-nav:hover {
+    background-color: #0284c7;
+    color: white;
+    transform: translateY(-2px); /* Efecto de levante */
+}
+
+.btn-nav span {
+    font-size: 1.2rem;
+}
