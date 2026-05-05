@@ -36,7 +36,7 @@ def registro(data: RegistroUsuario, db: Session = Depends(get_db)):
 
         usuario = Usuario(
             NombreUsuario=data.username,
-            Contraseña=hash_password(data.password),
+            Contrasena=hash_password(data.password),
             IdCliente=cliente.IdCliente
         )
 
@@ -64,7 +64,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
     if not usuario:
         raise HTTPException(status_code=400, detail="Usuario no existe")
 
-    if not verify_password(form_data.password, usuario.Contraseña):
+    if not verify_password(form_data.password, usuario.Contrasena):
         raise HTTPException(status_code=400, detail="Contraseña incorrecta")
 
     token = create_access_token({"sub": usuario.NombreUsuario})

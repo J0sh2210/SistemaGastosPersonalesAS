@@ -23,7 +23,7 @@ class Usuario(Base):
 
     IdCuentaUsuario = Column(Integer, primary_key=True, index=True)
     NombreUsuario = Column(String, unique=True)
-    Contraseña = Column(String)
+    Contrasena = Column(String)
     IdCliente = Column(Integer, ForeignKey("Cliente.IdCliente"))
 
 
