@@ -23,7 +23,7 @@ class Usuario(Base):
 
     IdCuentaUsuario = Column(Integer, primary_key=True, index=True)
     NombreUsuario = Column(String, unique=True)
-    Contraseña = Column(String)
+    Contrasena = Column(String)
     IdCliente = Column(Integer, ForeignKey("Cliente.IdCliente"))
 
 
@@ -47,3 +47,14 @@ class ActualizarUsuario(BaseModel):
     segundoNombre: str | None = None
     primerApellido: str
     segundoApellido: str | None = None
+    
+class UsuarioResponse(BaseModel):
+    IdCliente: int  # <--- Aquí está la magia
+    usuario: str
+    nombre: str
+    segundoNombre: str | None = None
+    apellido: str
+    segundoApellido: str | None = None
+
+    class Config:
+        from_attributes = True

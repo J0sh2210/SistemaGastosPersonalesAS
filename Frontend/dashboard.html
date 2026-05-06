@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inicio - Dashboard</title>
+    <link rel="stylesheet" href="css/usuario_style.css">
+    <style>
+        body {
+            display: block !important; 
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+        /* MENÚ LATERAL */
+        .sidebar {
+            width: 260px;
+            background-color: var(--card-bg);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar h2 {
+            color: var(--primary);
+            margin-bottom: 30px;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+        .menu-item {
+            display: block;
+            padding: 12px 15px;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.3s;
+            font-weight: 500;
+        }
+        .menu-item:hover, .menu-item.active {
+            background-color: var(--bg-color);
+            color: var(--primary);
+        }
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-start;
+        }
+        .profile-wrapper {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        
+        <nav class="sidebar">
+            <h2>Mi Sistema</h2>
+            <a href="dashboard.html" class="menu-item active">👤 Mi Perfil</a>
+            <a href="categoria_index.html" class="menu-item">📁 Categorías</a>
+            <a href="crear_gasto_recurrente.html" class="menu-item">➕ Crear Gasto</a>
+            <a href="listar_gastos_recurrentes.html" class="menu-item">📋 Lista Gastos</a>
+            <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
+            <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Ingreso</a>
+            
+            <div style="flex-grow: 1;"></div>
+            <button onclick="logout()" class="btn btn-outline" style="width: 100%;">Cerrar Sesión</button>
+        </nav>
+
+        <main class="main-content">
+            <div class="profile-wrapper">
+                <h2>Datos del Perfil</h2>
+                <div class="profile-card">
+                    <p><strong>Usuario:</strong> <span id="prof-user">Cargando...</span></p>
+                    <p><strong>Nombre:</strong> <span id="prof-name">Cargando...</span></p>
+                    <p><strong>Apellido:</strong> <span id="prof-lastname">Cargando...</span></p>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <script src="js/dashboard_config.js"></script>
+</body>
+</html>

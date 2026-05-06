@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gastos Personales</title>
+    <link rel="stylesheet" href="css/usuario_style.css">
+</head>
+<body>
+
+    <div id="auth-section" class="container">
+        <div class="tabs">
+            <button id="tab-login" class="tab active" onclick="showForm('login')">Iniciar Sesión</button>
+            <button id="tab-register" class="tab" onclick="showForm('register')">Registrarse</button>
+        </div>
+
+        <form id="form-login" class="form-content active">
+            <h2>Bienvenido de nuevo</h2>
+            <input type="text" id="login-username" placeholder="Usuario" required>
+            <input type="password" id="login-password" placeholder="Contraseña" required>
+            <button type="submit" class="btn">Ingresar</button>
+            <p id="login-error" class="error-msg"></p>
+        </form>
+
+        <form id="form-register" class="form-content">
+            <h2>Crear Cuenta</h2>
+            <input type="text" id="reg-username" placeholder="Nombre de usuario" required>
+            <input type="password" id="reg-password" placeholder="Contraseña" required>
+            <div class="row">
+                <input type="text" id="reg-nombre1" placeholder="Primer Nombre" required>
+                <input type="text" id="reg-nombre2" placeholder="Segundo Nombre (Opcional)">
+            </div>
+            <div class="row">
+                <input type="text" id="reg-apellido1" placeholder="Primer Apellido" required>
+                <input type="text" id="reg-apellido2" placeholder="Segundo Apellido (Opcional)">
+            </div>
+            <button type="submit" class="btn">Registrar</button>
+            <p id="reg-msg" class="msg"></p>
+        </form>
+    </div>
+
+    <div id="profile-section" class="container hidden">
+        <h2>Mi Perfil</h2>
+        <div class="profile-card">
+            <p><strong>Usuario:</strong> <span id="prof-user"></span></p>
+            <p><strong>Nombre:</strong> <span id="prof-name"></span></p>
+            <p><strong>Apellido:</strong> <span id="prof-lastname"></span></p>
+        </div>
+        <div class="actions">
+            <button onclick="window.location.href='categoria_index.html'" class="btn-nav">
+                <span>📁</span> Gestionar Categorías
+            </button>
+            <button onclick="logout()" class="btn btn-outline">Cerrar Sesión</button>
+        </div>
+    </div>
+    <script src="js/usuario_config.js"></script>
+</body>
+</html>

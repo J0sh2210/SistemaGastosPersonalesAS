@@ -7,9 +7,28 @@ from routes.movimiento_routes import router as movimiento_router
 from routes.gasto_recurrente_routes import router as gastorecu_router
 from routes.gasto_routes import router as gasto_router
 from routes.ingreso_routes import router as ingreso_router
-from routes.presupuesto_routes import router as presupuesto_router
+from routes.filtrado_routes import router as filtrado_router
+from fastapi.middleware.cors import CORSMiddleware
+
+
+from routes.movimiento_routes import router as movimiento_router
 
 app = FastAPI(title="Sistema de Gastos Personales API")
+
+# =====================================
+# RUTAS
+# =====================================
+
+
+# Permitir CORS para que el frontend pueda conectarse
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # En producción debes poner la URL de tu frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 app.include_router(categoria_router)
 app.include_router(usuario_router, prefix="/usuarios")
@@ -18,6 +37,8 @@ app.include_router(gasto_router, prefix="/gastos", tags=["Movimientos"])
 app.include_router(gastorecu_router, prefix="/gastos-recurrentes", tags=["Gastos Recurrentes"])
 app.include_router(ingreso_router)
 app.include_router(presupuesto_router, prefix="/presupuestos", tags=["Presupuestos"])
+app.include_router(filtrado_router, prefix="/movimientos", tags=["Filtrado"])
+app.include_router(movimiento_router)
 
 def get_db():
     db = SessionLocal()
@@ -25,6 +46,11 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# =====================================
+# INICIO
+# =====================================
+
 
 @app.get("/")
 def read_root():

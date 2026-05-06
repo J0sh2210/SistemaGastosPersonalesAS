@@ -12,7 +12,8 @@ class IngresoService:
             @Monto = :Monto, 
             @IdCliente = :IdCliente
         """)
-        # Ejecutamos y extraemos la fila devuelta por el SP
+        
+        # Ejecutamos y extraemos la fila
         result = db.execute(query, {
             "Concepto": ingreso.Concepto,
             "Monto": ingreso.Monto,

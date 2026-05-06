@@ -166,3 +166,31 @@ BEGIN
     ORDER BY m.FechaMovimiento DESC;
 END;
 GO
+-- =============================================
+-- SP Filtrar Movimientos por Mes
+-- =============================================
+CREATE PROCEDURE sp_FiltrarMovimientosPorMes
+    @Mes   INT,
+    @Anio  INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @Mes < 1 OR @Mes > 12
+        THROW 50001, 'El mes debe estar entre 1 y 12', 1;
+
+    IF @Anio < 2000
+        THROW 50002, 'El anio no es valido', 1;
+
+    SELECT
+        IdMovimiento,
+        Concepto,
+        Monto,
+        FechaMovimiento,
+        IdCliente,
+        IdTipo
+    FROM Movimiento
+    WHERE MONTH(FechaMovimiento) = @Mes
+      AND YEAR(FechaMovimiento) = @Anio
+    ORDER BY FechaMovimiento DESC;
+END

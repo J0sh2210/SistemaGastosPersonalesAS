@@ -9,11 +9,13 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def hash_password(password: str):
-    return pwd_context.hash(password)
+    # Recortamos a un máximo de 72 caracteres para evitar el error de Bcrypt
+    return pwd_context.hash(password[:72])
 
 
 def verify_password(plain_password: str, hashed_password: str):
-    return pwd_context.verify(plain_password, hashed_password)
+    # También debemos recortarla al verificar el login
+    return pwd_context.verify(plain_password[:72], hashed_password)
 
 
 # JWT config
