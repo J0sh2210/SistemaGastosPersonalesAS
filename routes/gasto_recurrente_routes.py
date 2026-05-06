@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import date
+from services.gasto_recurrente_service import desactivar_gasto_recurrente
 from database import SessionLocal
 from models.gasto_recurrente_model import GastoRecurrente
 from models.schemas import CrearGastoRecurrente, LeerGastoRecurrente, ActualizarGastoRecurrente
@@ -56,14 +57,7 @@ def actualizar_gasto_recurrente(id: int, datos: ActualizarGastoRecurrente, db: S
     db.refresh(nuevo_gasto)
     return nuevo_gasto
 
-@router.delete("/{id}")
-def eliminar_gasto(id: int, db: Session = Depends(get_db)):
-    gasto = db.query(GastoRecurrente).filter(GastoRecurrente.IdGastoRecurrente == id).first()
-    if not gasto:
-        raise HTTPException(status_code=404, detail="Gasto no encontrado")
-    gasto.Activo = False
-    db.commit()
-    return {"message": "Gasto desactivado"}
+
 
 @router.get("/generate-monthly")
 def generar_gastos_mensuales(db: Session = Depends(get_db)):
@@ -74,3 +68,7 @@ def generar_gastos_mensuales(db: Session = Depends(get_db)):
         if gasto.FechaInicio.day == hoy.day:
             generados.append({"Concepto": gasto.Concepto, "Monto": float(gasto.Monto), "Fecha": hoy})
     return {"message": "Gastos procesados", "data": generados}
+
+@router.put("/desactivar/{id}")
+def desactivar(id: int, db: Session = Depends(get_db)):
+    return desactivar_gasto_recurrente(db, id)
