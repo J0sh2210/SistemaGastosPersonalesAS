@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends
 
 from database import SessionLocal
+from routes.presupuesto_routes import router as presupuesto_router
 from routes.categoria_routes import router as categoria_router
 from routes.usuario_routes import router as usuario_router
 from routes.movimiento_routes import router as movimiento_router
@@ -15,19 +16,20 @@ from routes.movimiento_routes import router as movimiento_router
 
 app = FastAPI(title="Sistema de Gastos Personales API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # El "*" permite que cualquier página se conecte (ideal para desarrollo)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite POST, GET, PUT, DELETE, etc.
+    allow_headers=["*"],  # Permite cualquier encabezado
+)
+
 # =====================================
 # RUTAS
 # =====================================
 
 
 # Permitir CORS para que el frontend pueda conectarse
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # En producción debes poner la URL de tu frontend
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 app.include_router(categoria_router)
@@ -39,6 +41,7 @@ app.include_router(ingreso_router)
 app.include_router(presupuesto_router, prefix="/presupuestos", tags=["Presupuestos"])
 app.include_router(filtrado_router, prefix="/movimientos", tags=["Filtrado"])
 app.include_router(movimiento_router)
+
 
 def get_db():
     db = SessionLocal()

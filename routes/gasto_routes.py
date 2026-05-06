@@ -5,6 +5,7 @@ from database import SessionLocal # Importamos desde tu database.py
 from models.schemas import GastoCreate, GastoResponse
 from services import gasto_service
 
+
 router = APIRouter()
 
 # Dependencia para la sesión

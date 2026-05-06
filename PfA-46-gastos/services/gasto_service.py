@@ -1,4 +1,4 @@
-from database import engine
+from sabeerquees import engine
 from sqlalchemy import text
 from fastapi import HTTPException
 from models.gasto_model import GastoCreate, GastoUpdate

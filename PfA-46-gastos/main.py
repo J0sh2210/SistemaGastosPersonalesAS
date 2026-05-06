@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from sqlalchemy import text
 
-from database import engine
+from sabeerquees import engine
 from routes.gasto_routes import router as gasto_router
 
 app = FastAPI(title="PfA-46 — Registro y Edición de Gastos API")
