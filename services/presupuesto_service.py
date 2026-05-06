@@ -1,75 +1,64 @@
-from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from typing import List
-from models.presupuesto_model import Presupuesto # Solo para type hints, no usado en mocks
-from models.schemas import PresupuestoCreate, PresupuestoUpdate, PresupuestoResponse
+from datetime import datetime
+from models.presupuesto_model import PresupuestoResponse, PresupuestoCreate, PresupuestoUpdate
 
-def crear_presupuesto_mensual(db: Session, presupuesto_data: PresupuestoCreate) -> PresupuestoResponse:
-    # MOCK: Simulación sin BD para compilación (PFA-108 backend-only)
-    # TODO: Descomentar cuando tabla 'presupuesto' exista
-    """
-    nuevo_presupuesto = Presupuesto(
-        IdCliente=presupuesto_data.IdCliente,
-        Anio=presupuesto_data.Anio,
-        Mes=presupuesto_data.Mes,
-        MontoPresupuestado=presupuesto_data.MontoPresupuestado
-    )
-    db.add(nuevo_presupuesto)
-    db.commit()
-    db.refresh(nuevo_presupuesto)
-    return nuevo_presupuesto
-    """
-    from datetime import datetime
-    return PresupuestoResponse(
-        IdPresupuesto=1,
-        IdCliente=presupuesto_data.IdCliente,
-        Anio=presupuesto_data.Anio,
-        Mes=presupuesto_data.Mes,
-        MontoPresupuestado=presupuesto_data.MontoPresupuestado,
-        FechaCreacion=datetime.now()
-    )
+# Global mock storage (simula DB - persistente memoria)
+_presupuestos_mock = {}
 
-def obtener_presupuesto_mensual(db: Session, id_cliente: int, anio: int, mes: int) -> PresupuestoResponse:
-    # MOCK: Simulación sin BD (PFA-108)
-    from datetime import datetime
-    return PresupuestoResponse(
-        IdPresupuesto=1,
-        IdCliente=id_cliente,
-        Anio=anio,
-        Mes=mes,
-        MontoPresupuestado=5000.0,
-        FechaCreacion=datetime.now()
-    )
+def crear_presupuesto_mensual(db, presupuesto_data: PresupuestoCreate) -> PresupuestoResponse:
+    key = (presupuesto_data.IdCliente, presupuesto_data.Anio, presupuesto_data.Mes)
 
-def listar_presupuestos_cliente(db: Session, id_cliente: int) -> List[PresupuestoResponse]:
-    # MOCK: Simulación sin BD (PFA-108)
-    from datetime import datetime
-    mock_presupuestos = [
-        PresupuestoResponse(
-            IdPresupuesto=1,
-            IdCliente=id_cliente,
-            Anio=2024,
-            Mes=1,
-            MontoPresupuestado=5000.0,
-            FechaCreacion=datetime.now()
-        )
+    if key in _presupuestos_mock:
+        raise HTTPException(status_code=400, detail="Ya existe presupuesto para este cliente, mes y año")
+    
+    if not (1 <= presupuesto_data.Mes <= 12):
+        raise HTTPException(status_code=400, detail="Mes debe estar entre 1 y 12")
+
+    id_presupuesto = len(_presupuestos_mock) + 1
+
+    _presupuestos_mock[key] = {
+        "IdPresupuesto": id_presupuesto,
+        "IdCliente": presupuesto_data.IdCliente,
+        "Anio": presupuesto_data.Anio,
+        "Mes": presupuesto_data.Mes,
+        "MontoLimite": presupuesto_data.MontoLimite,
+        "FechaCreacion": datetime.now()
+    }
+
+    return PresupuestoResponse(**_presupuestos_mock[key])
+
+def obtener_presupuesto_mensual(db, id_cliente: int, anio: int, mes: int) -> PresupuestoResponse:
+    key = (id_cliente, anio, mes)
+
+    if key not in _presupuestos_mock:
+        raise HTTPException(status_code=404, detail="Presupuesto mensual no encontrado")
+
+    return PresupuestoResponse(**_presupuestos_mock[key])
+
+def listar_presupuestos_cliente(db, id_cliente: int) -> List[PresupuestoResponse]:
+    cliente_presupuestos = [
+        p for p in _presupuestos_mock.values()
+        if p["IdCliente"] == id_cliente
     ]
-    return mock_presupuestos
 
-def actualizar_presupuesto_mensual(db: Session, id_presupuesto: int, update_data: PresupuestoUpdate) -> PresupuestoResponse:
-    # MOCK: Simulación sin BD (PFA-108)
-    from datetime import datetime
-    return PresupuestoResponse(
-        IdPresupuesto=id_presupuesto,
-        IdCliente=1,
-        Anio=2024,
-        Mes=1,
-        MontoPresupuestado=update_data.MontoPresupuestado if update_data.MontoPresupuestado else 6000.0,
-        FechaCreacion=datetime.now()
-    )
+    return [PresupuestoResponse(**p) for p in cliente_presupuestos]
 
-def eliminar_presupuesto_mensual(db: Session, id_presupuesto: int):
-    # MOCK: Simulación sin BD (PFA-108)
-    return {"mensaje": f"Presupuesto {id_presupuesto} eliminado exitosamente (simulado)"}
+def actualizar_presupuesto_mensual(db, id_presupuesto: int, update_data: PresupuestoUpdate) -> PresupuestoResponse:
+    for data in _presupuestos_mock.values():
+        if data["IdPresupuesto"] == id_presupuesto:
+            if update_data.MontoLimite is not None:
+                data["MontoLimite"] = update_data.MontoLimite
 
-# TODO: Implementar CRUD real cuando tabla 'presupuesto' exista en BD
+            data["FechaCreacion"] = datetime.now()
+            return PresupuestoResponse(**data)
+
+    raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+
+def eliminar_presupuesto_mensual(db, id_presupuesto: int):
+    for key, data in list(_presupuestos_mock.items()):
+        if data["IdPresupuesto"] == id_presupuesto:
+            del _presupuestos_mock[key]
+            return {"mensaje": f"Presupuesto {id_presupuesto} eliminado exitosamente"}
+
+    raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
