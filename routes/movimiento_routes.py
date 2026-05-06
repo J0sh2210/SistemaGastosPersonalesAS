@@ -99,6 +99,10 @@ def editar_categoria_Movimiento(idMovimiento: int, request: EditarCategoriaReque
 def obtener_diferencia(tipo: str = Query(..., enum=["mes", "anio"])):
     return calcular_diferencia(tipo)
 
+@router.get("/resumen-mes/{id_cliente}/{anio}/{mes}", response_model=ResumenMesResponse)
+def obtener_resumen_mes_route(id_cliente: int, anio: int, mes: int, db: Session = Depends(get_db)):
+    return obtener_resumen_mes(id_cliente, anio, mes, db)
+
 @router.get("/mes-actual/{id_cliente}", response_model=list[MovimientoMesResponse])
 def obtener_movimientos_mes(id_cliente: int, db: Session = Depends(get_db)):
     movimientos = MovimientoService.obtener_movimientos_mes_actual(db, id_cliente)

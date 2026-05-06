@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 from database import SessionLocal
 from routes.categoria_routes import router as categoria_router
@@ -35,14 +35,11 @@ app.include_router(usuario_router, prefix="/usuarios")
 app.include_router(movimiento_router, prefix="/movimientos", tags=["Movimientos"])
 app.include_router(gasto_router, prefix="/gastos", tags=["Movimientos"])
 app.include_router(gastorecu_router, prefix="/gastos-recurrentes", tags=["Gastos Recurrentes"])
-# ... dentro de la zona donde incluyes tus routers:
 app.include_router(ingreso_router)
+app.include_router(presupuesto_router, prefix="/presupuestos", tags=["Presupuestos"])
 app.include_router(filtrado_router, prefix="/movimientos", tags=["Filtrado"])
 app.include_router(movimiento_router)
 
-# =====================================
-# SESION BD
-# =====================================
 def get_db():
     db = SessionLocal()
     try:
