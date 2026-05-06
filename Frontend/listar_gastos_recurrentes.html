@@ -1,28 +1,60 @@
-//Enma
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Lista de Gastos Recurrentes</title>
+    <link rel="stylesheet" href="css/usuario_style.css">
+    <style>
+        body { display: block !important; background-color: var(--bg-color); margin: 0; }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--card-bg); padding: 25px 20px; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+        .sidebar h2 { color: var(--primary); margin-bottom: 30px; text-align: center; }
+        .menu-item { display: block; padding: 12px 15px; color: var(--text-main); text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
+        .menu-item:hover, .menu-item.active { background-color: var(--bg-color); color: var(--primary); }
+        .main-content { flex: 1; padding: 50px; }
+        
+        /* Estilos de tabla */
+        .table-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; }
+        th { background-color: #f8fafc; color: var(--primary); }
+        .btn-eliminar { background: #fee2e2; color: #ef4444; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    </style>
 </head>
-<body>
+<body onload="cargarGastos()">
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <h2>Mi Sistema</h2>
+            <a href="dashboard.html" class="menu-item">👤 Mi Perfil</a>
+            <a href="categoria_index.html" class="menu-item">📁 Categorías</a>
+            <a href="crear_gasto_recurrente.html" class="menu-item">➕ Crear Gasto</a>
+            <a href="listar_gastos_recurrentes.html" class="menu-item active">📋 Lista Gastos</a>
+            <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
+            <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Ingreso</a>
+            <div style="flex-grow: 1;"></div>
+            <button onclick="logout()" class="btn btn-outline">Cerrar Sesión</button>
+        </nav>
 
-<h2>Gastos Recurrentes</h2>
-
-<table border="1">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Concepto</th>
-            <th>Monto</th>
-            <th>Fecha</th>
-            <th>Frecuencia</th>
-        </tr>
-    </thead>
-    <tbody id="tablaGastos"></tbody>
-</table>
-
-<script src="js/listar_gastos.js"></script>
-
+        <main class="main-content">
+            <div class="table-card">
+                <h2>Gastos Recurrentes Registrados</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Concepto</th>
+                            <th>Monto</th>
+                            <th>Fecha</th>
+                            <th>Frecuencia</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaGastos"></tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+    <script src="js/listar_gastos.js"></script>
+    <script>function logout(){ localStorage.removeItem("token"); window.location.href="usuario_index.html"; }</script>
 </body>
 </html>
