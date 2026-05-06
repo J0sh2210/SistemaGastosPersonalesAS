@@ -92,7 +92,9 @@ def perfil(
         Cliente.IdCliente == usuario.IdCliente
     ).first()
 
+    # Agregamos "IdCliente" al diccionario de respuesta
     return {
+        "IdCliente": cliente.IdCliente,  # <--- ¡ESTA ES LA LÍNEA MÁGICA!
         "usuario": usuario.NombreUsuario,
         "nombre": cliente.PrimerNombre,
         "segundoNombre": cliente.SegundoNombre,

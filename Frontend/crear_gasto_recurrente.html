@@ -1,89 +1,58 @@
-//Enma
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Crear Gasto Recurrente</title>
-
+    <link rel="stylesheet" href="css/usuario_style.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            width: 350px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-        }
-
-        button {
-            width: 100%;
-            padding: 10px;
-            background: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        button:hover {
-            background: #0056b3;
-        }
-
-        #mensaje {
-            text-align: center;
-            margin-top: 10px;
-            font-weight: bold;
-        }
+        body { display: block !important; background-color: var(--bg-color); margin: 0; }
+        .dashboard-container { display: flex; min-height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--card-bg); padding: 25px 20px; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+        .sidebar h2 { color: var(--primary); margin-bottom: 30px; text-align: center; }
+        .menu-item { display: block; padding: 12px 15px; color: var(--text-main); text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
+        .menu-item:hover, .menu-item.active { background-color: var(--bg-color); color: var(--primary); }
+        .main-content { flex: 1; padding: 50px; display: flex; justify-content: center; align-items: flex-start; }
+        
+        /* Estilos del form de Enma adaptados */
+        .form-container { background: white; padding: 25px; border-radius: 10px; width: 100%; max-width: 400px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; }
+        #mensaje { text-align: center; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
-
 <body>
+    <div class="dashboard-container">
+        <nav class="sidebar">
+            <h2>Mi Sistema</h2>
+            <a href="dashboard.html" class="menu-item">👤 Mi Perfil</a>
+            <a href="categoria_index.html" class="menu-item">📁 Categorías</a>
+            <a href="crear_gasto_recurrente.html" class="menu-item active">➕ Crear Gasto</a>
+            <a href="listar_gastos_recurrentes.html" class="menu-item">📋 Lista Gastos</a>
+            <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
+            <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Ingreso</a>
+            <div style="flex-grow: 1;"></div>
+            <button onclick="logout()" class="btn btn-outline">Cerrar Sesión</button>
+        </nav>
 
-<div class="container">
-    <h2>Crear Gasto</h2>
-
-    <form id="formGasto">
-        <input type="text" id="concepto" placeholder="Concepto" required>
-
-        <input type="number" id="monto" placeholder="Monto" required>
-
-        <input type="date" id="fechaInicio" required>
-
-        <select id="frecuencia">
-            <option value="mensual">Mensual</option>
-            <option value="semanal">Semanal</option>
-        </select>
-
-        <input type="number" id="idCliente" placeholder="ID Cliente" required>
-
-        <button type="submit">Guardar</button>
-    </form>
-
-    <p id="mensaje"></p>
-</div>
-
-<script src="js/crear_gasto_recurrente.js"></script>
-
+        <main class="main-content">
+            <div class="form-container">
+                <h2 style="margin-bottom: 20px; text-align: center;">Crear Gasto Recurrente</h2>
+                <form id="formGasto">
+                    <input type="text" id="concepto" placeholder="Concepto" required>
+                    <input type="number" id="monto" placeholder="Monto" required>
+                    <input type="date" id="fechaInicio" required>
+                    <select id="frecuencia">
+                        <option value="Mensual">Mensual</option>
+                        <option value="Semanal">Semanal</option>
+                        <option value="Anual">Anual</option>
+                    </select>
+                    <input type="number" id="idCliente" placeholder="ID Cliente" required>
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Guardar Gasto</button>
+                    <p id="mensaje"></p>
+                </form>
+            </div>
+        </main>
+    </div>
+    <script src="js/crear_gasto_recurrente.js"></script>
+    <script>function logout(){ localStorage.removeItem("token"); window.location.href="usuario_index.html"; }</script>
 </body>
 </html>

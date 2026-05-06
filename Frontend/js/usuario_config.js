@@ -115,10 +115,9 @@ async function cargarPerfil() {
             document.getElementById('prof-user').innerText = data.usuario;
             document.getElementById('prof-name').innerText = `${data.nombre} ${data.segundoNombre || ''}`.trim();
             document.getElementById('prof-lastname').innerText = `${data.apellido} ${data.segundoApellido || ''}`.trim();
-            
-            // Ocultar login, mostrar perfil
-            document.getElementById('auth-section').classList.add('hidden');
-            document.getElementById('profile-section').classList.remove('hidden');
+            // Redirigir al nuevo dashboard
+            window.location.href = "dashboard.html";
+
         } else {
             // Token inválido o expirado
             logout();

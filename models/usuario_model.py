@@ -47,3 +47,14 @@ class ActualizarUsuario(BaseModel):
     segundoNombre: str | None = None
     primerApellido: str
     segundoApellido: str | None = None
+    
+class UsuarioResponse(BaseModel):
+    IdCliente: int  # <--- Aquí está la magia
+    usuario: str
+    nombre: str
+    segundoNombre: str | None = None
+    apellido: str
+    segundoApellido: str | None = None
+
+    class Config:
+        from_attributes = True
