@@ -1,69 +1,73 @@
-//Enma
+const API_URL = "http://127.0.0.1:8000/gastos-recurrentes/";
+
 async function cargarGastos() {
     try {
-        const response = await fetch("http://127.0.0.1:8000/gastos-recurrentes/");
 
-        if (!response.ok) {
-            throw new Error("Error al obtener los datos del servidor");
-        }
+        const respuesta = await fetch(API_URL);
 
-        const data = await response.json();
-        console.log("Datos recibidos:", data);
+        const gastos = await respuesta.json();
 
-        const tabla = document.getElementById("tablaGastos");
+        const tabla = document.getElementById("tabla-gastos");
 
-        if (!tabla) {
-            console.error("No se encontró el elemento tablaGastos");
-            return;
-        }
-
-        // Limpiar tabla antes de llenar
         tabla.innerHTML = "";
 
-        data.forEach(gasto => {
-            const fila = document.createElement("tr");
+        gastos.forEach(gasto => {
 
-            fila.innerHTML = `
-                <td>${gasto.IdGastoRecurrente}</td>
-                <td>${gasto.Concepto}</td>
-                <td>Q${gasto.Monto}</td>
-                <td>${gasto.FechaInicio}</td>
-                <td>${gasto.Frecuencia}</td>
-                <td>
-                    <button class="btn-eliminar" onclick="eliminarGasto(${gasto.IdGastoRecurrente})">
-                        Eliminar
-                    </button>
-                </td>
+            const fila = `
+                <tr>
+                    <td>${gasto.IdGastoRecurrente}</td>
+                    <td>${gasto.Concepto}</td>
+                    <td>${gasto.Monto}</td>
+                    <td>${gasto.Frecuencia}</td>
+
+                    <td>
+                        <button onclick="eliminarGasto(${gasto.IdGastoRecurrente})">
+                            Eliminar
+                        </button>
+                    </td>
+                </tr>
             `;
 
-            tabla.appendChild(fila);
+            tabla.innerHTML += fila;
         });
 
     } catch (error) {
-        console.error("Error real:", error);
+        console.error("Error al cargar gastos:", error);
     }
 }
 
-// Función para desactivar (eliminar lógico)
 async function eliminarGasto(id) {
-    if (!confirm("¿Seguro que deseas desactivar este gasto?")) return;
+
+    const confirmar = confirm("¿Desea eliminar este gasto recurrente?");
+
+    if (!confirmar) {
+        return;
+    }
 
     try {
-        const response = await fetch(`http://127.0.0.1:8000/gastos-recurrentes/desactivar/${id}`, {
-            method: "PUT"
-        });
 
-        if (response.ok) {
-            alert("Gasto desactivado correctamente");
-            cargarGastos(); // recargar tabla
+        const respuesta = await fetch(
+            `http://127.0.0.1:8000/gastos-recurrentes/desactivar/${id}`,
+            {
+                method: "PUT"
+            }
+        );
+
+        if (respuesta.ok) {
+
+            alert("Gasto eliminado correctamente");
+
+            cargarGastos();
+
         } else {
-            alert("Error al desactivar gasto");
+
+            alert("Error al eliminar gasto");
         }
 
     } catch (error) {
+
         console.error("Error:", error);
     }
 }
 
-// Ejecutar al cargar la página
-document.addEventListener("DOMContentLoaded", cargarGastos);
+cargarGastos();
