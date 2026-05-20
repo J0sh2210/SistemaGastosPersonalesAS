@@ -34,6 +34,22 @@ def crear_gasto_recurrente(gasto: CrearGastoRecurrente, db: Session = Depends(ge
 @router.get("/", response_model=List[LeerGastoRecurrente])
 def listar_gastos_recurrentes(db: Session = Depends(get_db)):
     return db.query(GastoRecurrente).filter(GastoRecurrente.Activo == True).all()
+@router.get("/{id}", response_model=LeerGastoRecurrente)
+def obtener_gasto_recurrente(id: int, db: Session = Depends(get_db)):
+
+    gasto = db.query(GastoRecurrente).filter(
+        GastoRecurrente.IdGastoRecurrente == id,
+        GastoRecurrente.Activo == True
+    ).first()
+
+    if not gasto:
+        raise HTTPException(
+            status_code=404,
+            detail="Gasto no encontrado"
+        )
+
+    return gasto
+
 
 @router.put("/{id}", response_model=LeerGastoRecurrente)
 def actualizar_gasto_recurrente(id: int, datos: ActualizarGastoRecurrente, db: Session = Depends(get_db)):

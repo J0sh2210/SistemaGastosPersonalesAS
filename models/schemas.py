@@ -55,9 +55,9 @@ class GastoResponse(GastoBase):
 
     class Config:
         from_attributes = True # Equivalente a orm_mode en Pydantic v2
-
 class FrecuenciaEnum(str, Enum):
-    mensual = "mensual"
+    semanal = "Semanal"
+    mensual = "Mensual"
 
 class CrearGastoRecurrente(BaseModel):
     Concepto: str = Field(..., min_length=1)

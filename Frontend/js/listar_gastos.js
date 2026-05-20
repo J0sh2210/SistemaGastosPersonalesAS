@@ -30,6 +30,10 @@ async function cargarGastos() {
                 <td>${gasto.FechaInicio}</td>
                 <td>${gasto.Frecuencia}</td>
                 <td>
+                    <button onclick="editarGasto(${gasto.IdGastoRecurrente})">
+                        ✏️Editar
+                    </button>
+
                     <button class="btn-eliminar" onclick="eliminarGasto(${gasto.IdGastoRecurrente})">
                         Eliminar
                     </button>
@@ -44,6 +48,11 @@ async function cargarGastos() {
     }
 }
 
+
+function editarGasto(id) {
+    if (!id) return;
+    window.location.href = `editar_gasto_recurrente.html?id=${id}`;
+}
 // Función para desactivar (eliminar lógico)
 async function eliminarGasto(id) {
     if (!confirm("¿Seguro que deseas desactivar este gasto?")) return;
