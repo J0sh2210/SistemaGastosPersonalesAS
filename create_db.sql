@@ -65,5 +65,18 @@ CREATE TABLE Movimiento (
 );
 GO
 
+
+CREATE TABLE GastoRecurrente (
+  IdGastoRecurrente INT PRIMARY KEY IDENTITY(1,1),
+  Concepto VARCHAR(100) NOT NULL,
+  Monto DECIMAL(12,2) NOT NULL,
+  FechaInicio DATETIME NOT NULL,
+  Frecuencia VARCHAR(20) NOT NULL,
+  IdCliente INT NOT NULL,
+  CONSTRAINT FK_GastoRecurrente_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
+);
+ALTER TABLE GastoRecurrente
+ADD Activo BIT NOT NULL DEFAULT 1;
+
 PRINT 'Database SistemasGastosAS created successfully!';
 
