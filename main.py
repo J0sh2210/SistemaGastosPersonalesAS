@@ -10,6 +10,8 @@ from routes.gasto_routes import router as gasto_router
 from routes.ingreso_routes import router as ingreso_router
 from routes.filtrado_routes import router as filtrado_router
 from fastapi.middleware.cors import CORSMiddleware
+from models.tipo_movimiento_model import TipoMovimiento
+from models.movimiento_model import Movimiento
 
 
 from routes.movimiento_routes import router as movimiento_router
