@@ -9,9 +9,8 @@ from routes.gasto_recurrente_routes import router as gastorecu_router
 from routes.gasto_routes import router as gasto_router
 from routes.ingreso_routes import router as ingreso_router
 from routes.filtrado_routes import router as filtrado_router
+from routes.meta_routes import router as meta_router
 from fastapi.middleware.cors import CORSMiddleware
-
-
 from routes.movimiento_routes import router as movimiento_router
 
 app = FastAPI(title="Sistema de Gastos Personales API")
@@ -41,7 +40,7 @@ app.include_router(ingreso_router)
 app.include_router(presupuesto_router, prefix="/presupuestos", tags=["Presupuestos"])
 app.include_router(filtrado_router, prefix="/movimientos", tags=["Filtrado"])
 app.include_router(movimiento_router)
-
+app.include_router(meta_router)
 
 def get_db():
     db = SessionLocal()
