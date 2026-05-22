@@ -8,3 +8,6 @@ class MetaAhorroCreate(BaseModel):
     monto_objetivo: float
     fecha_limite: date
     monto_actual: float
+
+class ActualizarCantidadMeta(BaseModel):
+    monto_actual: float
