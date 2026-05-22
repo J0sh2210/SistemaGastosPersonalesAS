@@ -114,3 +114,39 @@ def actualizar_cantidad_ahorro(id_meta, data):
             status_code=500,
             detail=str(e)
         )
+    
+def eliminar_meta(id_meta):
+
+    try:
+
+        query = text("""
+        DELETE FROM MetasAhorro
+        WHERE IdMeta = :id_meta
+        """)
+
+        with engine.begin() as conn:
+
+            resultado = conn.execute(query, {
+                "id_meta": id_meta
+            })
+
+            # Verificar si existe
+            if resultado.rowcount == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Meta de ahorro no encontrada"
+                )
+
+        return {
+            "mensaje": "Meta de ahorro eliminada correctamente"
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
