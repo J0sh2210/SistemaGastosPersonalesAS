@@ -10,8 +10,11 @@ class Movimiento(Base):
     Concepto = Column(String)
     Monto = Column(DECIMAL(12, 2))
     FechaMovimiento = Column(DateTime)
-    IdCliente = Column(Integer, ForeignKey("Cliente.IdCliente"))
-    IdTipo = Column(Integer, ForeignKey("TipoMovimiento.IdTipo"))
+
+    IdCliente = Column(Integer) 
+    IdTipo = Column(Integer)
+
+    IdCategoria = Column(Integer)
 
 class EditarCategoriaRequest(BaseModel):
     idCategoria: int

@@ -1,0 +1,138 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+.layout-principal {
+    display: flex;
+    height: 100vh;
+    background-color: #e3f2fd; /* Fondo celeste de tu diseño */
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+    width: 260px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 0;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.05);
+}
+
+.titulo-sistema {
+    color: #007bff;
+    text-align: center;
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+}
+
+.menu-navegacion {
+    flex-grow: 1;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 15px 25px;
+    text-decoration: none;
+    color: #444;
+    font-weight: 500;
+    border-left: 5px solid transparent;
+    transition: 0.3s;
+}
+
+.menu-item.activo {
+    background-color: #e3f2fd; /* Celeste claro al estar activo */
+    color: #007bff;
+    border-left: 5px solid #007bff; /* Barra azul a la izquierda */
+}
+
+.icono {
+    margin-right: 12px;
+    font-size: 1.2rem;
+}
+
+.sidebar-footer {
+    padding: 20px;
+}
+
+.btn-cerrar-sesion {
+    width: 100%;
+    padding: 10px;
+    background: white;
+    border: 2px solid #007bff;
+    color: #007bff;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- CONTENIDO --- */
+.contenido-derecha {
+    flex-grow: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.contenedor-blanco {
+    background: white;
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.cabecera-seccion {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.cabecera-seccion h2 {
+    color: #007bff;
+}
+
+.btn-nuevo-gasto {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+/* --- TABLA --- */
+.tabla-personalizada {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.tabla-personalizada th {
+    text-align: left;
+    padding: 15px;
+    background: #f8f9fa;
+    color: #666;
+    border-bottom: 2px solid #eee;
+}
+
+.tabla-personalizada td {
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+}
+
+.btn-eliminar {
+    color: #dc3545;
+    background: none;
+    border: 1px solid #dc3545;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-eliminar:hover {
+    background: #dc3545;
+    color: white;
+}

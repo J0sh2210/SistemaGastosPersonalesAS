@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Gastos - Mi Sistema</title>
+    <link rel="stylesheet" href="css/movimientos_styles.css">
+</head>
+<body>
+    <div class="layout-principal">
+        <aside class="sidebar">
+            <h1 class="titulo-sistema">Mi Sistema</h1>
+            
+            <nav class="menu-navegacion">
+                <a href="dashboard.html" class="menu-item">
+                    <span class="icono">👤</span> Mi Perfil
+                </a>
+                <a href="categoria_index.html" class="menu-item">
+                    <span class="icono">📂</span> Categorías
+                </a>
+                <a href="crear_gasto_recurrente.html" class="menu-item">
+                    <span class="icono">➕</span> Crear Gasto
+                </a>
+                <a href="listado_gastos.html" class="menu-item activo">
+                    <span class="icono">📋</span> Lista Gastos
+                </a>
+                <a href="movimientos_mes.html" class="menu-item">
+                    <span class="icono">📅</span> Movimientos
+                </a>
+                <a href="registrar_ingreso.html" class="menu-item">
+                    <span class="icono">💰</span> Registrar Ingreso
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="btn-cerrar-sesion" onclick="cerrarSesion()">Cerrar Sesión</button>
+            </div>
+        </aside>
+
+        <main class="contenido-derecha">
+            <div class="contenedor-blanco">
+                <header class="cabecera-seccion">
+                    <h2>💸 Mis Gastos</h2>
+                    <button class="btn-nuevo-gasto" onclick="window.location.href='nuevo_gasto.html'">
+                        + Registrar Gasto
+                    </button>
+                </header>
+
+                <div id="mensaje-estado" class="mensaje-estado">Cargando gastos...</div>
+
+                <div class="tabla-scroll">
+                    <table class="tabla-personalizada" id="tabla-gastos" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Fecha</th>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/gastos_config.js"></script>
+</body>
+</html>

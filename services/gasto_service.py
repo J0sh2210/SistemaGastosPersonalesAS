@@ -2,19 +2,25 @@ from sqlalchemy.orm import Session
 from models.movimiento_model import Movimiento
 from models.schemas import GastoCreate
 from fastapi import HTTPException
+from datetime import datetime # <--- Asegúrate de importar esto
 
 ID_TIPO_GASTO = 2 # Según tu script SQL (Egreso)
 
 def obtener_gastos(db: Session):
     return db.query(Movimiento).filter(Movimiento.IdTipo == ID_TIPO_GASTO).all()
 
+
+# ... otros imports
+
 def crear_nuevo_gasto(db: Session, gasto_data: GastoCreate):
     nuevo_gasto = Movimiento(
-        Concepto=gasto_data.Concepto,
+        # Usa Mayúscula inicial para que coincida con tu GastoCreate
+        Concepto=gasto_data.Concepto, 
         Monto=gasto_data.Monto,
         IdCliente=gasto_data.IdCliente,
         IdCategoria=gasto_data.IdCategoria,
-        IdTipo=ID_TIPO_GASTO
+        IdTipo=ID_TIPO_GASTO,
+        FechaMovimiento=datetime.now()
     )
     db.add(nuevo_gasto)
     db.commit()
