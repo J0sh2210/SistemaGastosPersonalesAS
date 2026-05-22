@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from models.meta_model import MetaAhorroCreate, ActualizarCantidadMeta
-from services.meta_service import actualizar_cantidad_ahorro, crear_meta
+from services.meta_service import actualizar_cantidad_ahorro, crear_meta, eliminar_meta
 
 
 
@@ -20,3 +20,8 @@ def crear(meta: MetaAhorroCreate):
 def actualizar_cantidad(id_meta: int, meta: ActualizarCantidadMeta):
 
     return actualizar_cantidad_ahorro(id_meta, meta)
+
+@router.delete("/{id_meta}")
+def eliminar(id_meta: int):
+
+    return eliminar_meta(id_meta)
