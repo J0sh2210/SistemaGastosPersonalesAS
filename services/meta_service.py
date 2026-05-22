@@ -69,3 +69,48 @@ def crear_meta(data):
             status_code=500,
             detail=str(e)
         )
+    
+def actualizar_cantidad_ahorro(id_meta, data):
+
+    # Validar que no sea negativo
+    if data.monto_actual < 0:
+        raise HTTPException(
+            status_code=400,
+            detail="La cantidad ahorrada no puede ser negativa"
+        )
+
+    try:
+
+        query = text("""
+        UPDATE MetasAhorro
+        SET MontoActual = :monto_actual
+        WHERE IdMeta = :id_meta
+        """)
+
+        with engine.begin() as conn:
+
+            resultado = conn.execute(query, {
+                "monto_actual": data.monto_actual,
+                "id_meta": id_meta
+            })
+
+            # Verificar si existe
+            if resultado.rowcount == 0:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Meta no encontrada"
+                )
+
+        return {
+            "mensaje": "Cantidad de ahorro actualizada correctamente"
+        }
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
