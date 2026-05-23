@@ -37,7 +37,7 @@ app.include_router(movimiento_router, prefix="/movimientos", tags=["Movimientos"
 app.include_router(gasto_router, prefix="/gastos", tags=["Movimientos"])
 app.include_router(gastorecu_router, prefix="/gastos-recurrentes", tags=["Gastos Recurrentes"])
 app.include_router(ingreso_router)
-app.include_router(presupuesto_router, prefix="/presupuestos", tags=["Presupuestos"])
+app.include_router(presupuesto_router)
 app.include_router(filtrado_router, prefix="/movimientos", tags=["Filtrado"])
 app.include_router(movimiento_router)
 app.include_router(meta_router)

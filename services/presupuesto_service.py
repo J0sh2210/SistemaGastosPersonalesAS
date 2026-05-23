@@ -1,64 +1,165 @@
+from sqlalchemy import text
+from database import engine
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
-from typing import List
-from datetime import datetime
-from models.presupuesto_model import PresupuestoResponse, PresupuestoCreate, PresupuestoUpdate
 
-# Global mock storage (simula DB - persistente memoria)
-_presupuestos_mock = {}
 
-def crear_presupuesto_mensual(db, presupuesto_data: PresupuestoCreate) -> PresupuestoResponse:
-    key = (presupuesto_data.IdCliente, presupuesto_data.Anio, presupuesto_data.Mes)
+# CREAR
+def crear_presupuesto_mensual(presupuesto_data):
 
-    if key in _presupuestos_mock:
-        raise HTTPException(status_code=400, detail="Ya existe presupuesto para este cliente, mes y año")
-    
-    if not (1 <= presupuesto_data.Mes <= 12):
-        raise HTTPException(status_code=400, detail="Mes debe estar entre 1 y 12")
+    query = text("""
+        EXEC sp_CrearPresupuesto
+            @MontoPresupuesto = :monto,
+            @IdCategoria = :categoria,
+            @MesAplicacion = :mes,
+            @IdUsuario = :usuario
+    """)
 
-    id_presupuesto = len(_presupuestos_mock) + 1
+    try:
 
-    _presupuestos_mock[key] = {
-        "IdPresupuesto": id_presupuesto,
-        "IdCliente": presupuesto_data.IdCliente,
-        "Anio": presupuesto_data.Anio,
-        "Mes": presupuesto_data.Mes,
-        "MontoLimite": presupuesto_data.MontoLimite,
-        "FechaCreacion": datetime.now()
+        with engine.connect() as conn:
+
+            conn.execute(query, {
+                "monto": presupuesto_data.monto_presupuesto,
+                "categoria": presupuesto_data.id_categoria,
+                "mes": presupuesto_data.mes_aplicacion,
+                "usuario": presupuesto_data.id_usuario
+            })
+
+            conn.commit()
+
+        return {
+            "mensaje": "Presupuesto creado correctamente"
+        }
+
+    except SQLAlchemyError as e:
+
+        error = str(e)
+
+        if "La categoria no existe" in error:
+            raise HTTPException(
+                status_code=400,
+                detail="La categoría seleccionada no existe"
+            )
+
+        if "El usuario no existe" in error:
+            raise HTTPException(
+                status_code=400,
+                detail="El usuario no existe"
+            )
+
+        if "El monto debe ser mayor a 0" in error:
+            raise HTTPException(
+                status_code=400,
+                detail="El monto debe ser mayor a 0"
+            )
+
+        raise HTTPException(
+        status_code=500,
+        detail=str(e)
+    )
+# ACTUALIZAR
+def actualizar_presupuesto(id_presupuesto, data):
+
+    campos = []
+    valores = {}
+
+    if data.monto_presupuesto is not None:
+        campos.append("MontoPresupuesto = :monto")
+        valores["monto"] = data.monto_presupuesto
+
+    if data.id_categoria is not None:
+        campos.append("IdCategoria = :categoria")
+        valores["categoria"] = data.id_categoria
+
+    if data.mes_aplicacion is not None:
+        campos.append("MesAplicacion = :mes")
+        valores["mes"] = data.mes_aplicacion
+
+    if data.id_usuario is not None:
+        campos.append("IdUsuario = :usuario")
+        valores["usuario"] = data.id_usuario
+
+    if not campos:
+        return {
+            "mensaje": "No se enviaron datos para actualizar"
+        }
+
+    valores["id"] = id_presupuesto
+
+    query = text(f"""
+        UPDATE PresupuestoMensual
+        SET {", ".join(campos)}
+        WHERE IdPresupuesto = :id
+    """)
+
+    with engine.connect() as conn:
+
+        result = conn.execute(query, valores)
+
+        conn.commit()
+
+        if result.rowcount == 0:
+            return {
+                "mensaje": "Presupuesto no encontrado"
+            }
+
+    return {
+        "mensaje": "Presupuesto actualizado correctamente"
     }
 
-    return PresupuestoResponse(**_presupuestos_mock[key])
 
-def obtener_presupuesto_mensual(db, id_cliente: int, anio: int, mes: int) -> PresupuestoResponse:
-    key = (id_cliente, anio, mes)
+# ELIMINAR
+def eliminar_presupuesto(id_presupuesto):
 
-    if key not in _presupuestos_mock:
-        raise HTTPException(status_code=404, detail="Presupuesto mensual no encontrado")
+    query = text("""
+        DELETE FROM PresupuestoMensual
+        WHERE IdPresupuesto = :id
+    """)
 
-    return PresupuestoResponse(**_presupuestos_mock[key])
+    with engine.connect() as conn:
 
-def listar_presupuestos_cliente(db, id_cliente: int) -> List[PresupuestoResponse]:
-    cliente_presupuestos = [
-        p for p in _presupuestos_mock.values()
-        if p["IdCliente"] == id_cliente
-    ]
+        result = conn.execute(query, {
+            "id": id_presupuesto
+        })
 
-    return [PresupuestoResponse(**p) for p in cliente_presupuestos]
+        conn.commit()
 
-def actualizar_presupuesto_mensual(db, id_presupuesto: int, update_data: PresupuestoUpdate) -> PresupuestoResponse:
-    for data in _presupuestos_mock.values():
-        if data["IdPresupuesto"] == id_presupuesto:
-            if update_data.MontoLimite is not None:
-                data["MontoLimite"] = update_data.MontoLimite
+        if result.rowcount == 0:
+            return {
+                "mensaje": "Presupuesto no encontrado"
+            }
 
-            data["FechaCreacion"] = datetime.now()
-            return PresupuestoResponse(**data)
+    return {
+        "mensaje": "Presupuesto eliminado correctamente"
+    }
 
-    raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+# OBTENER PRESUPUESTOS
+def obtener_presupuestos():
 
-def eliminar_presupuesto_mensual(db, id_presupuesto: int):
-    for key, data in list(_presupuestos_mock.items()):
-        if data["IdPresupuesto"] == id_presupuesto:
-            del _presupuestos_mock[key]
-            return {"mensaje": f"Presupuesto {id_presupuesto} eliminado exitosamente"}
+    query = text("""
+        SELECT
+            IdPresupuesto,
+            MontoPresupuesto,
+            IdCategoria,
+            MesAplicacion,
+            IdUsuario
+        FROM PresupuestoMensual
+    """)
 
-    raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
+    with engine.connect() as conn:
+
+        result = conn.execute(query)
+
+        presupuestos = []
+
+        for row in result:
+            presupuestos.append({
+                "id_presupuesto": row[0],
+                "monto_presupuesto": float(row[1]),
+                "id_categoria": row[2],
+                "mes_aplicacion": row[3],
+                "id_usuario": row[4]
+            })
+
+    return presupuestos
