@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Presupuestos</title>
+
+    <link rel="stylesheet" href="css/usuario_style.css">
+    <link rel="stylesheet" href="css/presupuesto.css">
+
+    <style>
+
+        body{
+            display: block !important;
+            background-color: var(--bg-color);
+            margin: 0;
+        }
+
+        .dashboard-container{
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar{
+            width: 260px;
+            background-color: var(--card-bg);
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar h2{
+            color: var(--primary);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .menu-item{
+            display: block;
+            padding: 12px 15px;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            transition: 0.3s;
+        }
+
+        .menu-item:hover,
+        .menu-item.active{
+            background-color: var(--bg-color);
+            color: var(--primary);
+        }
+
+        .main-content{
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .container-gestion{
+            margin: 0 !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+            width: 100%;
+            max-width: 950px;
+        }
+
+    </style>
+
+</head>
+<body>
+
+    <div class="dashboard-container">
+
+        <nav class="sidebar">
+
+            <h2>Mi Sistema</h2>
+
+           
+            <a href="dashboard.html" class="menu-item">
+                👤 Mi Perfil
+            </a>
+
+            <a href="categoria_index.html" class="menu-item active">
+                📁 Categorías
+            </a>
+
+            <a href="crear_gasto_recurrente.html" class="menu-item">
+                ➕ Crear Gasto
+            </a>
+
+            <a href="listar_gastos_recurrentes.html" class="menu-item">
+                📋 Lista Gastos
+            </a>
+
+            <a href="movimientos_mes.html" class="menu-item">
+                📅 Movimientos
+            </a>
+
+            <a href="registrar_ingreso.html" class="menu-item">
+                💰 Registrar Ingreso
+            </a>
+
+            <a href="presupuesto.html" class="menu-item">
+                💵 Presupuestos
+            </a>
+
+            <div style="flex-grow:1;"></div>
+
+            <button
+                onclick="logout()"
+                class="btn btn-outline"
+                style="width:100%;">
+
+                Cerrar Sesión
+
+            </button>
+
+        </nav>
+
+        <main class="main-content">
+
+            <div class="container container-gestion">
+
+                <h2>Gestión de Presupuestos</h2>
+
+                <div class="table-container">
+
+                    <table>
+
+                        <thead>
+                            <tr>
+                                <th>Monto</th>
+                                <th>Categoría</th>
+                                <th>Mes</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="lista-presupuestos">
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="actions">
+
+                    <button
+                        class="btn btn-nav"
+                        onclick="mostrarSeccion('crear')">
+
+                        ➕ Crear Presupuesto
+
+                    </button>
+
+                </div>
+
+                <!-- CREAR -->
+                <div id="seccion-crear" class="hidden section-form">
+
+                    <h3>Crear Presupuesto</h3>
+
+                    <form id="form-presupuesto">
+
+                        <input
+                            type="number"
+                            id="pres-monto"
+                            placeholder="Monto"
+                            required
+                        >
+
+                        <div class="row">
+
+                            <select id="pres-categoria">
+
+                                <option value="">
+                                    Seleccione una categoría
+                                </option>
+
+                            </select>
+
+                            <input
+                                type="text"
+                                id="pres-mes"
+                                placeholder="Mes"
+                                required
+                            >
+
+                        </div>
+
+                        <input
+                            type="hidden"
+                            id="id-usuario"
+                            value="1"
+                        >
+
+                        <button type="submit" class="btn">
+                            Guardar
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <!-- EDITAR -->
+                <div id="seccion-editar" class="hidden section-form">
+
+                    <h3>Editar Presupuesto</h3>
+
+                    <form id="form-edit-presupuesto">
+
+                        <input type="hidden" id="edit-id">
+
+                        <input
+                            type="number"
+                            id="edit-monto"
+                            placeholder="Monto"
+                        >
+
+                        <div class="row">
+
+                            <select id="edit-categoria">
+
+                                <option value="">
+                                    Seleccione una categoría
+                                </option>
+
+                            </select>
+
+                            <input
+                                type="text"
+                                id="edit-mes"
+                                placeholder="Mes"
+                            >
+
+                        </div>
+
+                        <button type="submit" class="btn">
+                            Actualizar
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </main>
+
+    </div>
+
+    <script src="js/presupuesto.js"></script>
+
+</body>
+</html>

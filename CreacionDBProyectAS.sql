@@ -314,3 +314,93 @@ INSERT INTO MetasAhorro
 VALUES
 (3, 'Comprar Moto', 25000, '2027-06-30', 5000);
 
+CREATE TABLE PresupuestoMensual (
+    IdPresupuesto INT PRIMARY KEY IDENTITY(1,1),
+
+    MontoPresupuesto DECIMAL(12,2) NOT NULL,
+
+    IdCategoria INT NULL,
+
+    MesAplicacion VARCHAR(20) NOT NULL,
+
+    IdUsuario INT NOT NULL,
+
+    FOREIGN KEY (IdUsuario)
+        REFERENCES Cliente(IdCliente),
+
+    FOREIGN KEY (IdCategoria)
+        REFERENCES CategoriaMovimiento(IdCategoria)
+);
+
+CREATE PROCEDURE sp_CrearPresupuesto
+(
+    @MontoPresupuesto DECIMAL(12,2),
+    @IdCategoria INT = NULL,
+    @MesAplicacion VARCHAR(20),
+    @IdUsuario INT
+)
+AS
+BEGIN
+    BEGIN TRY
+
+        -- VALIDAR USUARIO
+        IF NOT EXISTS (
+            SELECT 1
+            FROM Cliente
+            WHERE IdCliente = @IdUsuario
+        )
+        BEGIN
+            THROW 50001, 'El usuario no existe', 1;
+        END
+
+        -- VALIDAR MONTO
+        IF @MontoPresupuesto <= 0
+        BEGIN
+            THROW 50002, 'El monto debe ser mayor a 0', 1;
+        END
+
+        -- SI NO ENVIA CATEGORIA
+        IF @IdCategoria IS NULL
+        BEGIN
+            SELECT TOP 1
+                @IdCategoria = IdCategoria
+            FROM CategoriaMovimiento
+            WHERE NombreCategoria = 'General'
+        END
+
+        -- VALIDAR CATEGORIA
+        IF NOT EXISTS (
+            SELECT 1
+            FROM CategoriaMovimiento
+            WHERE IdCategoria = @IdCategoria
+        )
+        BEGIN
+            THROW 50003, 'La categoria no existe', 1;
+        END
+
+        -- INSERTAR
+        INSERT INTO PresupuestoMensual
+        (
+            MontoPresupuesto,
+            IdCategoria,
+            MesAplicacion,
+            IdUsuario
+        )
+        VALUES
+        (
+            @MontoPresupuesto,
+            @IdCategoria,
+            @MesAplicacion,
+            @IdUsuario
+        )
+
+        SELECT SCOPE_IDENTITY() AS IdPresupuesto
+
+    END TRY
+
+    BEGIN CATCH
+
+        THROW;
+
+    END CATCH
+END
