@@ -111,6 +111,7 @@ async function cargarPerfil() {
 
         if (response.ok) {
             const data = await response.json();
+            localStorage.setItem("IdCliente", data.IdCliente);
             // Llenar datos en el HTML
             document.getElementById('prof-user').innerText = data.usuario;
             document.getElementById('prof-name').innerText = `${data.nombre} ${data.segundoNombre || ''}`.trim();
@@ -130,6 +131,7 @@ async function cargarPerfil() {
 // --- CERRAR SESIÓN ---
 function logout() {
     localStorage.removeItem("token");
+    localStorage.removeItem("IdCliente");
     document.getElementById('auth-section').classList.remove('hidden');
     document.getElementById('profile-section').classList.add('hidden');
     
