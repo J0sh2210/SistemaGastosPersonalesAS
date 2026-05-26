@@ -68,6 +68,26 @@
             max-width: 950px;
         }
 
+        .alerta-presupuesto{
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .alerta{
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+
+        .excedido{
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
     </style>
 
 </head>
@@ -79,7 +99,6 @@
 
             <h2>Mi Sistema</h2>
 
-           
             <a href="dashboard.html" class="menu-item">
                 👤 Mi Perfil
             </a>
@@ -127,6 +146,12 @@
 
                 <h2>Gestión de Presupuestos</h2>
 
+                <!-- ALERTA -->
+                <div
+                    id="alerta-presupuesto"
+                    class="alerta-presupuesto">
+                </div>
+
                 <div class="table-container">
 
                     <table>
@@ -146,6 +171,9 @@
                     </table>
 
                 </div>
+                
+                <h3>📊 Progreso del presupuesto</h3>
+                <div id="contenedor-barras"></div>
 
                 <div class="divider"></div>
 
@@ -197,11 +225,19 @@
                         <input
                             type="hidden"
                             id="id-usuario"
-                            value="1"
                         >
 
                         <button type="submit" class="btn">
-                            Guardar
+                            Guardar presupuesto
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-outline"
+                            onclick="ocultarSecciones()">
+
+                            Cancelar
+
                         </button>
 
                     </form>
@@ -240,11 +276,20 @@
                             >
 
                         </div>
+                        <div class="row">
+                            <button type="submit" class="btn">
+                                Actualizar
+                            </button>
 
-                        <button type="submit" class="btn">
-                            Actualizar
-                        </button>
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="ocultarSecciones()">
 
+                                Cancelar
+
+                            </button>
+                        </div>
                     </form>
 
                 </div>
@@ -256,6 +301,8 @@
     </div>
 
     <script src="js/presupuesto.js"></script>
+
+    
 
 </body>
 </html>

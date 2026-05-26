@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 
 from database import SessionLocal
 from routes.presupuesto_routes import router as presupuesto_router
+from routes.alerta_router import router as alerta_router
 from routes.categoria_routes import router as categoria_router
 from routes.usuario_routes import router as usuario_router
 from routes.movimiento_routes import router as movimiento_router
@@ -33,6 +34,7 @@ app.add_middleware(
 
 app.include_router(categoria_router)
 app.include_router(usuario_router, prefix="/usuarios")
+app.include_router(alerta_router)
 app.include_router(movimiento_router, prefix="/movimientos", tags=["Movimientos"])
 app.include_router(gasto_router, prefix="/gastos", tags=["Movimientos"])
 app.include_router(gastorecu_router, prefix="/gastos-recurrentes", tags=["Gastos Recurrentes"])

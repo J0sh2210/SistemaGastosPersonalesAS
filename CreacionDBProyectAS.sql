@@ -2,7 +2,10 @@
 
 --USE SistemasGastosAS;
 
-
+--------------------------------------
+        --CREACION DE TABLAS
+--------------------------------------
+-- TABLA 1
 CREATE TABLE Cliente (
   IdCliente INT PRIMARY KEY IDENTITY(1,1),
   PrimerNombre VARCHAR(25),
@@ -12,38 +15,36 @@ CREATE TABLE Cliente (
   FechaCreacion DATETIME,
   Estado CHAR(1)
 );
-
+-- TABLA 2
 CREATE TABLE Correo (
   IdCorreo INT PRIMARY KEY IDENTITY(1,1),
   Correo VARCHAR(100) UNIQUE,
   IdCliente INT,
   CONSTRAINT Fk_Correo_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
 );
-
+-- TABLA 3
 CREATE TABLE Telefono (
   IdTelefono INT PRIMARY KEY IDENTITY(1,1),
   Telefono VARCHAR(50) UNIQUE,
   IdCliente INT,
   CONSTRAINT Fk_Telefono_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
 );
-
+-- TABLA 4
 CREATE TABLE CuentaUsuario (
   IdCuentaUsuario INT PRIMARY KEY IDENTITY(1,1),
-  Contrase�a VARCHAR(100),
+  Contrasena VARCHAR(100),
   NombreUsuario VARCHAR(25) UNIQUE,
   IdCliente INT,
   CONSTRAINT FK_CuentaUsuario_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
 );
-
+-- TABLA 5
 CREATE TABLE TipoMovimiento (
   IdTipo INT PRIMARY KEY IDENTITY(1,1),
   Nombre VARCHAR(10),
   Naturaleza VARCHAR(10)
 );
 
-INSERT INTO TipoMovimiento (Nombre, Naturaleza) VALUES ('Ingreso', 'Credito');
-INSERT INTO TipoMovimiento (Nombre, Naturaleza) VALUES ('Egreso', 'Debito');
-
+-- TABLA 6
 CREATE TABLE Movimiento (
   IdMovimiento INT PRIMARY KEY IDENTITY(1,1),
   Concepto VARCHAR(30),
@@ -54,9 +55,26 @@ CREATE TABLE Movimiento (
   CONSTRAINT FK_Movimiento_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente),
   CONSTRAINT FK_Movimiento_Tipo FOREIGN KEY (IdTipo) REFERENCES TipoMovimiento(IdTipo)
 );
+-- TABLA 7
+CREATE TABLE TipoCategoriaMovimiento (
+    IdTipoCategoria INT PRIMARY KEY IDENTITY(1,1),
+    NombreTipo VARCHAR(50),
+    Descripcion VARCHAR(100)
+);
+-- TABLA 8
+CREATE TABLE CategoriaMovimiento (
+    IdCategoria INT PRIMARY KEY IDENTITY(1,1),
+    NombreCategoria VARCHAR(50) NOT NULL,
+    IdTipoMovimiento INT NOT NULL,
+    IdTipoCategoria INT NOT NULL,
+    CONSTRAINT FK_CategoriaMovimiento_TipoMovimiento FOREIGN KEY (IdTipoMovimiento) REFERENCES TipoMovimiento(IdTipo),
+    CONSTRAINT FK_CategoriaMovimiento_TipoCategoria FOREIGN KEY (IdTipoCategoria) REFERENCES TipoCategoriaMovimiento(IdTipoCategoria)
+);
 
-go
-
+ALTER TABLE Movimiento ADD IdCategoria INT;
+ALTER TABLE Movimiento ADD CONSTRAINT FK_Movimiento_Categoria
+FOREIGN KEY (IdCategoria) REFERENCES CategoriaMovimiento(IdCategoria);
+-- TABLA 9
 CREATE TABLE GastoRecurrente (
   IdGastoRecurrente INT PRIMARY KEY IDENTITY(1,1),
   Concepto VARCHAR(100) NOT NULL,
@@ -66,33 +84,154 @@ CREATE TABLE GastoRecurrente (
   IdCliente INT NOT NULL,
   CONSTRAINT FK_GastoRecurrente_Cliente FOREIGN KEY (IdCliente) REFERENCES Cliente(IdCliente)
 );
-
 ALTER TABLE GastoRecurrente
 ADD Activo BIT NOT NULL DEFAULT 1;
+-- TABLA 10
+CREATE TABLE MetasAhorro (
+    IdMeta INT PRIMARY KEY IDENTITY(1,1),
+    IdUsuario INT,
+    NombreMeta VARCHAR(100),
+    MontoObjetivo DECIMAL(12,2),
+    FechaLimite DATE,
+    MontoActual DECIMAL(12,2)
+)
 
-select * from GastoRecurrente
+-- TABLA 11
+CREATE TABLE PresupuestoMensual (
+    IdPresupuesto INT PRIMARY KEY IDENTITY(1,1),
+    MontoPresupuesto DECIMAL(12,2) NOT NULL,
+    IdCategoria INT NULL,
+    MesAplicacion VARCHAR(20) NOT NULL,
+    IdUsuario INT NOT NULL,
 
---SP agregar movimiento y editar
+    FOREIGN KEY (IdUsuario) REFERENCES Cliente(IdCliente),
+    FOREIGN KEY (IdCategoria) REFERENCES CategoriaMovimiento(IdCategoria)
+);
+ALTER TABLE PresupuestoMensual ADD PorcentajeAlerta DECIMAL(5,2) NOT NULL DEFAULT 80;
+-- TABLA 12
+CREATE TABLE Alerta (
+    IdAlerta INT PRIMARY KEY IDENTITY(1,1),
+    IdUsuario INT NOT NULL,
+    IdCategoria INT NOT NULL,
+    TipoAlerta VARCHAR(20),
+    Mensaje VARCHAR(200),
+    Gastado DECIMAL(12,2),
+    LimitePresupuesto DECIMAL(12,2),
+    Porcentaje DECIMAL(5,2),
+    Mes INT,
+    Anio INT,
+    FechaCreacion DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_Alerta_Usuario FOREIGN KEY (IdUsuario) REFERENCES Cliente(IdCliente),
+    CONSTRAINT FK_Alerta_Categoria FOREIGN KEY (IdCategoria) REFERENCES CategoriaMovimiento(IdCategoria)
+);
 
-USE SistemasGastosAS;
-GO
+------------------------------------------------------------
+            --INSERCION DE DATOS INICIALES
+------------------------------------------------------------
+-- CLIENTE
+INSERT INTO Cliente (PrimerNombre, SegundoNombre, PrimerApellido, SegundoApellido, FechaCreacion, Estado)
+VALUES 
+('Juan', 'Carlos', 'Pérez', 'Lopez', GETDATE(), 'A'),
+('Maria', 'Fernanda', 'Gomez', 'Ruiz', GETDATE(), 'A'),
+('Luis', 'Alberto', 'Martinez', 'Diaz', GETDATE(), 'A');
+
+-- TIPO MOVIMIENTO
+INSERT INTO TipoMovimiento (Nombre, Naturaleza)
+VALUES 
+('Ingreso', 'Credito'),
+('Egreso', 'Debito');
+
+-- TIPO CATEGORIA MOVIMIENTO
+INSERT INTO TipoCategoriaMovimiento (NombreTipo, Descripcion)
+VALUES 
+('Fijo', 'Gastos fijos mensuales'),
+('Variable', 'Gastos variables'),
+('Hormiga', 'Pequeños gastos diarios'),
+('Inversion', 'Dinero destinado a inversión');
+
+-- CATEGORIA MOVIMIENTO
+INSERT INTO CategoriaMovimiento (NombreCategoria, IdTipoMovimiento, IdTipoCategoria)
+VALUES 
+('Salario', 1, 1),
+('Comida', 2, 2),
+('Transporte', 2, 2),
+('Café diario', 2, 3),
+('Ahorro inversión', 1, 4);
+
+-- CUENTA USUARIO
+INSERT INTO CuentaUsuario (Contrasena, NombreUsuario, IdCliente)
+VALUES 
+('12345', 'juanp', 1),
+('12345', 'mariag', 2),
+('12345', 'luism', 3);
+
+-- CORREO
+INSERT INTO Correo (Correo, IdCliente)
+VALUES 
+('juan@gmail.com', 1),
+('maria@gmail.com', 2),
+('luis@gmail.com', 3);
+
+-- TELEFONO
+INSERT INTO Telefono (Telefono, IdCliente)
+VALUES 
+('5551-1111', 1),
+('5552-2222', 2),
+('5553-3333', 3);
+
+-- MOVIMIENTO
+INSERT INTO Movimiento (Concepto, Monto, FechaMovimiento, IdCliente, IdTipo, IdCategoria)
+VALUES 
+('Salario mensual', 5000, GETDATE(), 1, 1, 1),
+('Compra supermercado', 800, GETDATE(), 1, 2, 2),
+('Café', 25, GETDATE(), 1, 2, 4),
+('Transporte bus', 15, GETDATE(), 2, 2, 3);
+
+-- GASTO RECURRENTE
+INSERT INTO GastoRecurrente (Concepto, Monto, FechaInicio, Frecuencia, IdCliente, Activo)
+VALUES 
+('Internet', 250, GETDATE(), 'Mensual', 1, 1),
+('Netflix', 120, GETDATE(), 'Mensual', 2, 1);
+
+-- METAS DE AHORRO
+INSERT INTO MetasAhorro (IdUsuario, NombreMeta, MontoObjetivo, FechaLimite, MontoActual)
+VALUES 
+(1, 'Viaje a Japón', 15000, '2026-12-31', 2000),
+(2, 'Comprar Laptop', 8000, '2026-08-15', 1500),
+(3, 'Fondo de Emergencia', 10000, '2027-01-01', 3000);
+
+-- PRESUPUESTO MENSUAL
+INSERT INTO PresupuestoMensual (MontoPresupuesto, IdCategoria, MesAplicacion, IdUsuario)
+VALUES 
+(3000, 2, 'Enero', 1),
+(2000, 3, 'Enero', 2);
+
+-- ALERTA (PRUEBA)
+INSERT INTO Alerta (IdUsuario, IdCategoria, TipoAlerta, Mensaje, Gastado, LimitePresupuesto, Porcentaje, Mes, Anio)
+VALUES 
+(1, 2, 'ALERTA', 'Has alcanzado el 80% del presupuesto', 2400, 3000, 80, 1, 2026);
+
+
+------------------------------------------------------------
+            --SP DE LA BASE DE DATOS
+------------------------------------------------------------
 
 -- 1. SP para Registrar un Ingreso (Fuerza el IdTipo = 1)
 CREATE PROCEDURE sp_RegistrarIngreso
     @Concepto VARCHAR(30),
     @Monto DECIMAL(12,2),
-    @IdCliente INT
+    @IdCliente INT,
+    @IdCategoria INT
 AS
 BEGIN
     DECLARE @NuevoId INT;
     
-    INSERT INTO Movimiento (Concepto, Monto, FechaMovimiento, IdCliente, IdTipo)
-    VALUES (@Concepto, @Monto, GETDATE(), @IdCliente, 1);
+    INSERT INTO Movimiento (Concepto, Monto, FechaMovimiento, IdCliente, IdTipo,  IdCategoria)
+    VALUES (@Concepto, @Monto, GETDATE(), @IdCliente, 1, @IdCategoria);
     
     SET @NuevoId = SCOPE_IDENTITY();
     
-    -- Retornamos el registro recién creado para que la API lo devuelva
-    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo 
+    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo, IdCategoria
     FROM Movimiento 
     WHERE IdMovimiento = @NuevoId;
 END;
@@ -102,49 +241,24 @@ GO
 CREATE PROCEDURE sp_EditarIngreso
     @IdMovimiento INT,
     @Concepto VARCHAR(30),
-    @Monto DECIMAL(12,2)
+    @Monto DECIMAL(12,2),
+    @IdCategoria INT
 AS
 BEGIN
     UPDATE Movimiento
     SET Concepto = @Concepto,
-        Monto = @Monto
+        Monto = @Monto,
+        IdCategoria = @IdCategoria
     WHERE IdMovimiento = @IdMovimiento AND IdTipo = 1;
     
-    -- Retornamos el registro actualizado (si no existe o no era ingreso, no devuelve nada)
-    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo 
+    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo, IdCategoria
     FROM Movimiento 
     WHERE IdMovimiento = @IdMovimiento;
---Ver movimientos mes actual
-USE SistemasGastosAS;
-GO
-
-CREATE PROCEDURE sp_ObtenerMovimientosMesActual
-    @IdCliente INT
-AS
-BEGIN
-    -- Selecciona los movimientos y hace un JOIN para traer el nombre del tipo (Ingreso/Egreso)
-    SELECT 
-        m.IdMovimiento,
-        m.Concepto,
-        m.Monto,
-        m.FechaMovimiento,
-        m.IdCliente,
-        m.IdTipo,
-        t.Nombre AS NombreTipoMovimiento
-    FROM Movimiento m
-    INNER JOIN TipoMovimiento t ON m.IdTipo = t.IdTipo
-    WHERE m.IdCliente = @IdCliente
-      -- Filtro estricto para el mes y año actuales
-      AND MONTH(m.FechaMovimiento) = MONTH(GETDATE())
-      AND YEAR(m.FechaMovimiento) = YEAR(GETDATE())
-    ORDER BY m.FechaMovimiento DESC;
 END;
 GO
 
-USE SistemasGastosAS;
-GO
-
-ALTER PROCEDURE sp_ObtenerMovimientosMesActual
+--3. SP para Obtener Movimientos del Mes Actual (con JOIN para traer el nombre del tipo)
+CREATE PROCEDURE sp_ObtenerMovimientosMesActual
     @IdCliente INT,
     @Mes INT,
     @Anio INT
@@ -166,9 +280,8 @@ BEGIN
     ORDER BY m.FechaMovimiento DESC;
 END;
 GO
--- =============================================
--- SP Filtrar Movimientos por Mes
--- =============================================
+
+--4. SP para Filtrar Movimientos por Mes y Año (con validaciones)
 CREATE PROCEDURE sp_FiltrarMovimientosPorMes
     @Mes   INT,
     @Anio  INT
@@ -194,19 +307,8 @@ BEGIN
       AND YEAR(FechaMovimiento) = @Anio
     ORDER BY FechaMovimiento DESC;
 END
-
--- SP y tabla para metas de ahorro
-Use SistemasGastosAS;
 GO
-CREATE TABLE MetasAhorro (
-    IdMeta INT PRIMARY KEY IDENTITY(1,1),
-    IdUsuario INT,
-    NombreMeta VARCHAR(100),
-    MontoObjetivo DECIMAL(12,2),
-    FechaLimite DATE,
-    MontoActual DECIMAL(12,2)
-)
-
+-- 5. SP para Crear Meta de Ahorro (con validaciones)
 CREATE PROCEDURE sp_CrearMetaAhorro
     @IdUsuario INT,
     @NombreMeta VARCHAR(100),
@@ -270,137 +372,331 @@ BEGIN
 END;
 GO
 
-INSERT INTO MetasAhorro
-(
-    IdUsuario,
-    NombreMeta,
-    MontoObjetivo,
-    FechaLimite,
-    MontoActual
-)
-VALUES
-(1, 'Viaje a Japón', 15000, '2026-12-31', 2000);
-
-INSERT INTO MetasAhorro
-(
-    IdUsuario,
-    NombreMeta,
-    MontoObjetivo,
-    FechaLimite,
-    MontoActual
-)
-VALUES
-(1, 'Comprar Laptop', 8000, '2026-08-15', 1500);
-
-INSERT INTO MetasAhorro
-(
-    IdUsuario,
-    NombreMeta,
-    MontoObjetivo,
-    FechaLimite,
-    MontoActual
-)
-VALUES
-(2, 'Fondo de Emergencia', 10000, '2027-01-01', 3000);
-
-INSERT INTO MetasAhorro
-(
-    IdUsuario,
-    NombreMeta,
-    MontoObjetivo,
-    FechaLimite,
-    MontoActual
-)
-VALUES
-(3, 'Comprar Moto', 25000, '2027-06-30', 5000);
-
-CREATE TABLE PresupuestoMensual (
-    IdPresupuesto INT PRIMARY KEY IDENTITY(1,1),
-
-    MontoPresupuesto DECIMAL(12,2) NOT NULL,
-
-    IdCategoria INT NULL,
-
-    MesAplicacion VARCHAR(20) NOT NULL,
-
-    IdUsuario INT NOT NULL,
-
-    FOREIGN KEY (IdUsuario)
-        REFERENCES Cliente(IdCliente),
-
-    FOREIGN KEY (IdCategoria)
-        REFERENCES CategoriaMovimiento(IdCategoria)
-);
-
-CREATE PROCEDURE sp_CrearPresupuesto
+-- 6. SP para Crear Presupuesto Mensual (con validaciones y manejo de errores)
+CREATE OR ALTER PROCEDURE sp_CrearPresupuesto
 (
     @MontoPresupuesto DECIMAL(12,2),
     @IdCategoria INT = NULL,
     @MesAplicacion VARCHAR(20),
-    @IdUsuario INT
+    @IdUsuario INT,
+    @PorcentajeAlerta INT = 80
 )
 AS
 BEGIN
+    SET NOCOUNT ON;
+
     BEGIN TRY
 
-        -- VALIDAR USUARIO
-        IF NOT EXISTS (
-            SELECT 1
-            FROM Cliente
-            WHERE IdCliente = @IdUsuario
-        )
-        BEGIN
+        IF NOT EXISTS (SELECT 1 FROM Cliente WHERE IdCliente = @IdUsuario)
             THROW 50001, 'El usuario no existe', 1;
-        END
 
-        -- VALIDAR MONTO
         IF @MontoPresupuesto <= 0
-        BEGIN
             THROW 50002, 'El monto debe ser mayor a 0', 1;
-        END
 
-        -- SI NO ENVIA CATEGORIA
         IF @IdCategoria IS NULL
         BEGIN
-            SELECT TOP 1
-                @IdCategoria = IdCategoria
+            SELECT TOP 1 @IdCategoria = IdCategoria
             FROM CategoriaMovimiento
-            WHERE NombreCategoria = 'General'
+            WHERE NombreCategoria = 'General';
         END
 
-        -- VALIDAR CATEGORIA
-        IF NOT EXISTS (
-            SELECT 1
-            FROM CategoriaMovimiento
-            WHERE IdCategoria = @IdCategoria
-        )
-        BEGIN
+        IF NOT EXISTS (SELECT 1 FROM CategoriaMovimiento WHERE IdCategoria = @IdCategoria)
             THROW 50003, 'La categoria no existe', 1;
-        END
 
-        -- INSERTAR
+        IF @MesAplicacion IS NULL OR LTRIM(RTRIM(@MesAplicacion)) = ''
+            THROW 50004, 'Debe ingresar el mes de aplicacion', 1;
+
+        IF EXISTS (
+            SELECT 1
+            FROM PresupuestoMensual
+            WHERE IdUsuario = @IdUsuario
+              AND IdCategoria = @IdCategoria
+              AND MesAplicacion = @MesAplicacion
+        )
+            THROW 50005, 'Ya existe un presupuesto para esta categoria y mes', 1;
+
         INSERT INTO PresupuestoMensual
         (
             MontoPresupuesto,
             IdCategoria,
             MesAplicacion,
-            IdUsuario
+            IdUsuario,
+            PorcentajeAlerta
         )
         VALUES
         (
             @MontoPresupuesto,
             @IdCategoria,
             @MesAplicacion,
-            @IdUsuario
-        )
+            @IdUsuario,
+            @PorcentajeAlerta
+        );
 
-        SELECT SCOPE_IDENTITY() AS IdPresupuesto
+        SELECT
+            p.IdPresupuesto,
+            p.MontoPresupuesto,
+            c.NombreCategoria AS Categoria,
+            p.MesAplicacion,
+            p.IdUsuario,
+            p.PorcentajeAlerta
+        FROM PresupuestoMensual p
+        INNER JOIN CategoriaMovimiento c
+            ON p.IdCategoria = c.IdCategoria
+        WHERE p.IdPresupuesto = SCOPE_IDENTITY();
 
     END TRY
 
     BEGIN CATCH
-
         THROW;
-
     END CATCH
-END
+END;
+-- 7. SP para Validar Presupuesto Mensual (Calcula el porcentaje gastado y retorna estado)
+CREATE OR ALTER PROCEDURE sp_ValidarPresupuesto
+(
+    @IdUsuario INT,
+    @IdCategoria INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @TotalGastado DECIMAL(12,2);
+    DECLARE @MontoPresupuesto DECIMAL(12,2);
+    DECLARE @PorcentajeUsado DECIMAL(12,2);
+    DECLARE @PorcentajeAlerta DECIMAL(5,2);
+    DECLARE @Estado VARCHAR(30);
+    DECLARE @NombreCategoria VARCHAR(50);
+
+    BEGIN TRY
+
+        -- Obtener presupuesto
+        SELECT TOP 1
+            @MontoPresupuesto = p.MontoPresupuesto,
+            @PorcentajeAlerta = p.PorcentajeAlerta,
+            @NombreCategoria = c.NombreCategoria
+        FROM PresupuestoMensual p
+        INNER JOIN CategoriaMovimiento c
+            ON p.IdCategoria = c.IdCategoria
+        WHERE p.IdUsuario = @IdUsuario
+          AND p.IdCategoria = @IdCategoria;
+
+        IF @MontoPresupuesto IS NULL
+            THROW 50001, 'No existe presupuesto', 1;
+
+        -- Calcular gasto del mes actual
+        SELECT
+            @TotalGastado = ISNULL(SUM(Monto),0)
+        FROM Movimiento
+        WHERE IdCliente = @IdUsuario
+          AND IdCategoria = @IdCategoria
+          AND IdTipo = 2
+          AND MONTH(FechaMovimiento) = MONTH(GETDATE())
+          AND YEAR(FechaMovimiento) = YEAR(GETDATE());
+
+        -- Porcentaje usado
+        IF @MontoPresupuesto = 0
+            SET @PorcentajeUsado = 0;
+        ELSE
+            SET @PorcentajeUsado = (@TotalGastado / @MontoPresupuesto) * 100;
+
+        -- Estado del presupuesto
+        IF @PorcentajeUsado >= 100
+            SET @Estado = 'EXCEDIDO';
+        ELSE IF @PorcentajeUsado >= @PorcentajeAlerta
+            SET @Estado = 'ALERTA';
+        ELSE
+            SET @Estado = 'NORMAL';
+
+        -- Insertar alerta SOLO si aplica y no existe
+        IF @Estado <> 'NORMAL'
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1
+                FROM Alerta
+                WHERE IdUsuario = @IdUsuario
+                  AND IdCategoria = @IdCategoria
+                  AND Mes = MONTH(GETDATE())
+                  AND Anio = YEAR(GETDATE())
+                  AND TipoAlerta = @Estado
+            )
+            BEGIN
+                INSERT INTO Alerta
+                (
+                    IdUsuario,
+                    IdCategoria,
+                    TipoAlerta,
+                    Mensaje,
+                    Gastado,
+                    LimitePresupuesto,
+                    Porcentaje,
+                    Mes,
+                    Anio
+                )
+                VALUES
+                (
+                    @IdUsuario,
+                    @IdCategoria,
+                    @Estado,
+                    CONCAT(
+                        'Categoria: ', @NombreCategoria,
+                        ' | Gastado: Q', @TotalGastado,
+                        ' | Limite: Q', @MontoPresupuesto
+                    ),
+                    @TotalGastado,
+                    @MontoPresupuesto,
+                    @PorcentajeUsado,
+                    MONTH(GETDATE()),
+                    YEAR(GETDATE())
+                );
+            END
+        END
+
+        -- RESPUESTA PARA API
+        SELECT
+            @NombreCategoria AS categoria,
+            @Estado AS estado,
+            @TotalGastado AS gastado,
+            @MontoPresupuesto AS limite_presupuesto,
+            ROUND(@PorcentajeUsado,2) AS porcentaje_usado,
+            CASE WHEN @Estado = 'NORMAL' THEN 0 ELSE 1 END AS mostrar_alerta;
+
+    END TRY
+
+    BEGIN CATCH
+        THROW;
+    END CATCH
+END;
+GO
+-- 8. SP para Recalcular Presupuesto (Recalcula el porcentaje gastado y actualiza alertas)
+CREATE OR ALTER PROCEDURE sp_RecalcularPresupuestoPorUsuario
+(
+    @IdUsuario INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @IdCategoria INT;
+    DECLARE @MontoPresupuesto DECIMAL(12,2);
+    DECLARE @TotalGastado DECIMAL(12,2);
+    DECLARE @Porcentaje DECIMAL(5,2);
+    DECLARE @Umbral DECIMAL(5,2);
+    DECLARE @Estado VARCHAR(20);
+
+    -- recorrer presupuestos del usuario
+    DECLARE cur CURSOR FOR
+        SELECT IdCategoria, MontoPresupuesto, PorcentajeAlerta
+        FROM PresupuestoMensual
+        WHERE IdUsuario = @IdUsuario;
+
+    OPEN cur;
+
+    FETCH NEXT FROM cur INTO @IdCategoria, @MontoPresupuesto, @Umbral;
+
+    WHILE @@FETCH_STATUS = 0
+    BEGIN
+
+        -- si no hay presupuesto no hacemos nada
+        IF @MontoPresupuesto IS NULL OR @MontoPresupuesto = 0
+        BEGIN
+            FETCH NEXT FROM cur INTO @IdCategoria, @MontoPresupuesto, @Umbral;
+            CONTINUE;
+        END
+
+        -- gasto del mes
+        SELECT @TotalGastado = ISNULL(SUM(Monto),0)
+        FROM Movimiento
+        WHERE IdCliente = @IdUsuario
+          AND IdCategoria = @IdCategoria
+          AND IdTipo = 2
+          AND MONTH(FechaMovimiento) = MONTH(GETDATE())
+          AND YEAR(FechaMovimiento) = YEAR(GETDATE());
+
+        SET @Porcentaje = (@TotalGastado / @MontoPresupuesto) * 100;
+
+        -- estado
+        IF @Porcentaje >= 100
+            SET @Estado = 'EXCEDIDO';
+        ELSE IF @Porcentaje >= @Umbral
+            SET @Estado = 'ALERTA';
+        ELSE
+            SET @Estado = 'NORMAL';
+
+        -- evitar duplicados y actualizar alerta lógica
+        IF @Estado <> 'NORMAL'
+        BEGIN
+            IF NOT EXISTS (
+                SELECT 1 FROM Alerta
+                WHERE IdUsuario = @IdUsuario
+                  AND IdCategoria = @IdCategoria
+                  AND Mes = MONTH(GETDATE())
+                  AND Anio = YEAR(GETDATE())
+                  AND TipoAlerta = @Estado
+            )
+            BEGIN
+                INSERT INTO Alerta(
+                    IdUsuario, IdCategoria, TipoAlerta,
+                    Mensaje, Gastado, LimitePresupuesto,
+                    Porcentaje, Mes, Anio
+                )
+                VALUES (
+                    @IdUsuario,
+                    @IdCategoria,
+                    @Estado,
+                    'Alerta automática por presupuesto',
+                    @TotalGastado,
+                    @MontoPresupuesto,
+                    @Porcentaje,
+                    MONTH(GETDATE()),
+                    YEAR(GETDATE())
+                );
+            END
+        END
+
+        FETCH NEXT FROM cur INTO @IdCategoria, @MontoPresupuesto, @Umbral;
+    END
+
+    CLOSE cur;
+    DEALLOCATE cur;
+
+END;
+GO
+-- 9. SP para Obtener Resumen de Presupuestos (Trae el porcentaje gastado y estado para cada presupuesto)
+CREATE OR ALTER PROCEDURE sp_ObtenerResumenPresupuestos
+(
+    @IdUsuario INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        c.NombreCategoria AS categoria,
+        p.MontoPresupuesto AS limite,
+        ISNULL(SUM(m.Monto),0) AS gastado,
+        CASE 
+            WHEN p.MontoPresupuesto = 0 THEN 0
+            ELSE ROUND((ISNULL(SUM(m.Monto),0) / p.MontoPresupuesto) * 100, 2)
+        END AS porcentaje,
+        CASE 
+            WHEN p.MontoPresupuesto = 0 THEN 'SIN_DATOS'
+            WHEN (ISNULL(SUM(m.Monto),0) / p.MontoPresupuesto) * 100 >= 100 THEN 'EXCEDIDO'
+            WHEN (ISNULL(SUM(m.Monto),0) / p.MontoPresupuesto) * 100 >= p.PorcentajeAlerta THEN 'ALERTA'
+            ELSE 'NORMAL'
+        END AS estado
+    FROM PresupuestoMensual p
+    INNER JOIN CategoriaMovimiento c
+        ON p.IdCategoria = c.IdCategoria
+    LEFT JOIN Movimiento m
+        ON m.IdCategoria = p.IdCategoria
+        AND m.IdCliente = p.IdUsuario
+        AND m.IdTipo = 2
+        AND MONTH(m.FechaMovimiento) = MONTH(GETDATE())
+        AND YEAR(m.FechaMovimiento) = YEAR(GETDATE())
+    WHERE p.IdUsuario = @IdUsuario
+    GROUP BY 
+        c.NombreCategoria,
+        p.MontoPresupuesto,
+        p.PorcentajeAlerta;
+END;
+GO

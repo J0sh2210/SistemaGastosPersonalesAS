@@ -27,11 +27,13 @@ th {
     text-transform: uppercase;
     border-bottom: 2px solid var(--border-color);
     padding: 10px 5px;
+    text-align: center;
 }
 
 td {
     padding: 12px 5px;
     font-size: 0.9rem;
+    text-align: center;
     border-bottom: 1px solid #f1f5f9;
 }
 
@@ -153,3 +155,36 @@ td {
         font-size: 0.8rem;
     }
 }
+
+/* =========================
+   BARRA DE PROGRESO
+========================= */
+
+.barra-container {
+    width: 100%;
+    height: 18px;
+    background-color: #e5e7eb;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 5px;
+}
+
+.barra {
+    height: 100%;
+    width: 0%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 11px;
+    transition: width 0.4s ease;
+}
+
+/* =========================
+   ALERTA EN TABLA
+========================= */
+
+.alerta-roja {
+    background-color: #fee2e2 !important;
+}
+
