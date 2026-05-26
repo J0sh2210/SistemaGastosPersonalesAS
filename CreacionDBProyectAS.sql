@@ -194,3 +194,213 @@ BEGIN
       AND YEAR(FechaMovimiento) = @Anio
     ORDER BY FechaMovimiento DESC;
 END
+
+-- SP y tabla para metas de ahorro
+Use SistemasGastosAS;
+GO
+CREATE TABLE MetasAhorro (
+    IdMeta INT PRIMARY KEY IDENTITY(1,1),
+    IdUsuario INT,
+    NombreMeta VARCHAR(100),
+    MontoObjetivo DECIMAL(12,2),
+    FechaLimite DATE,
+    MontoActual DECIMAL(12,2)
+)
+
+CREATE PROCEDURE sp_CrearMetaAhorro
+    @IdUsuario INT,
+    @NombreMeta VARCHAR(100),
+    @MontoObjetivo DECIMAL(12,2),
+    @FechaLimite DATE,
+    @MontoActual DECIMAL(12,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+
+        -- Validar que el monto objetivo sea mayor a cero
+        IF @MontoObjetivo <= 0
+        BEGIN
+            THROW 50001, 'El monto objetivo debe ser mayor a cero.', 1;
+        END
+
+        -- Validar que la fecha limite no sea anterior a hoy
+        IF @FechaLimite < CAST(GETDATE() AS DATE)
+        BEGIN
+            THROW 50002, 'La fecha limite no puede ser anterior a la fecha actual.', 1;
+        END
+
+        -- Validar que el monto actual no sea negativo
+        IF @MontoActual < 0
+        BEGIN
+            THROW 50003, 'El monto actual no puede ser negativo.', 1;
+        END
+
+        -- Insertar la meta de ahorro
+        INSERT INTO MetasAhorro
+        (
+            IdUsuario,
+            NombreMeta,
+            MontoObjetivo,
+            FechaLimite,
+            MontoActual
+        )
+        VALUES
+        (
+            @IdUsuario,
+            @NombreMeta,
+            @MontoObjetivo,
+            @FechaLimite,
+            @MontoActual
+        );
+
+        -- Retornar el Id generado
+        SELECT SCOPE_IDENTITY() AS IdMeta;
+
+    END TRY
+
+    BEGIN CATCH
+
+        -- Retornar error
+        THROW;
+
+    END CATCH
+
+END;
+GO
+
+INSERT INTO MetasAhorro
+(
+    IdUsuario,
+    NombreMeta,
+    MontoObjetivo,
+    FechaLimite,
+    MontoActual
+)
+VALUES
+(1, 'Viaje a Japón', 15000, '2026-12-31', 2000);
+
+INSERT INTO MetasAhorro
+(
+    IdUsuario,
+    NombreMeta,
+    MontoObjetivo,
+    FechaLimite,
+    MontoActual
+)
+VALUES
+(1, 'Comprar Laptop', 8000, '2026-08-15', 1500);
+
+INSERT INTO MetasAhorro
+(
+    IdUsuario,
+    NombreMeta,
+    MontoObjetivo,
+    FechaLimite,
+    MontoActual
+)
+VALUES
+(2, 'Fondo de Emergencia', 10000, '2027-01-01', 3000);
+
+INSERT INTO MetasAhorro
+(
+    IdUsuario,
+    NombreMeta,
+    MontoObjetivo,
+    FechaLimite,
+    MontoActual
+)
+VALUES
+(3, 'Comprar Moto', 25000, '2027-06-30', 5000);
+
+CREATE TABLE PresupuestoMensual (
+    IdPresupuesto INT PRIMARY KEY IDENTITY(1,1),
+
+    MontoPresupuesto DECIMAL(12,2) NOT NULL,
+
+    IdCategoria INT NULL,
+
+    MesAplicacion VARCHAR(20) NOT NULL,
+
+    IdUsuario INT NOT NULL,
+
+    FOREIGN KEY (IdUsuario)
+        REFERENCES Cliente(IdCliente),
+
+    FOREIGN KEY (IdCategoria)
+        REFERENCES CategoriaMovimiento(IdCategoria)
+);
+
+CREATE PROCEDURE sp_CrearPresupuesto
+(
+    @MontoPresupuesto DECIMAL(12,2),
+    @IdCategoria INT = NULL,
+    @MesAplicacion VARCHAR(20),
+    @IdUsuario INT
+)
+AS
+BEGIN
+    BEGIN TRY
+
+        -- VALIDAR USUARIO
+        IF NOT EXISTS (
+            SELECT 1
+            FROM Cliente
+            WHERE IdCliente = @IdUsuario
+        )
+        BEGIN
+            THROW 50001, 'El usuario no existe', 1;
+        END
+
+        -- VALIDAR MONTO
+        IF @MontoPresupuesto <= 0
+        BEGIN
+            THROW 50002, 'El monto debe ser mayor a 0', 1;
+        END
+
+        -- SI NO ENVIA CATEGORIA
+        IF @IdCategoria IS NULL
+        BEGIN
+            SELECT TOP 1
+                @IdCategoria = IdCategoria
+            FROM CategoriaMovimiento
+            WHERE NombreCategoria = 'General'
+        END
+
+        -- VALIDAR CATEGORIA
+        IF NOT EXISTS (
+            SELECT 1
+            FROM CategoriaMovimiento
+            WHERE IdCategoria = @IdCategoria
+        )
+        BEGIN
+            THROW 50003, 'La categoria no existe', 1;
+        END
+
+        -- INSERTAR
+        INSERT INTO PresupuestoMensual
+        (
+            MontoPresupuesto,
+            IdCategoria,
+            MesAplicacion,
+            IdUsuario
+        )
+        VALUES
+        (
+            @MontoPresupuesto,
+            @IdCategoria,
+            @MesAplicacion,
+            @IdUsuario
+        )
+
+        SELECT SCOPE_IDENTITY() AS IdPresupuesto
+
+    END TRY
+
+    BEGIN CATCH
+
+        THROW;
+
+    END CATCH
+END

@@ -4,64 +4,80 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Categorías</title>
+
     <link rel="stylesheet" href="css/usuario_style.css">
     <link rel="stylesheet" href="css/categoria_style.css">
+
     <style>
-        /* Ajustes para integrar con la barra lateral */
-        body { 
-            display: block !important; 
-            background-color: var(--bg-color); 
-            margin: 0; 
+
+        body{
+            display: block !important;
+            background-color: var(--bg-color);
+            margin: 0;
         }
-        .dashboard-container { 
-            display: flex; 
-            min-height: 100vh; 
+
+        .dashboard-container{
+            display: flex;
+            min-height: 100vh;
         }
-        .sidebar { 
-            width: 260px; 
-            background-color: var(--card-bg); 
-            padding: 25px 20px; 
-            display: flex; 
-            flex-direction: column; 
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05); 
+
+        .sidebar{
+            width: 260px;
+            background-color: var(--card-bg);
+            padding: 25px 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
         }
-        .sidebar h2 { 
-            color: var(--primary); 
-            margin-bottom: 30px; 
-            text-align: center; 
+
+        .sidebar h2{
+            color: var(--primary);
+            margin-bottom: 30px;
+            text-align: center;
         }
-        .menu-item { 
-            display: block; 
-            padding: 12px 15px; 
-            color: var(--text-main); 
-            text-decoration: none; 
-            border-radius: 8px; 
-            margin-bottom: 10px; 
-            font-weight: 500; 
+
+        .menu-item{
+            display: block;
+            padding: 12px 15px;
+            color: var(--text-main);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-weight: 500;
+            transition: 0.3s;
         }
-        .menu-item:hover, .menu-item.active { 
-            background-color: var(--bg-color); 
-            color: var(--primary); 
+
+        .menu-item:hover,
+        .menu-item.active{
+            background-color: var(--bg-color);
+            color: var(--primary);
         }
-        .main-content { 
-            flex: 1; 
-            padding: 50px; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; 
+
+        .main-content{
+            flex: 1;
+            padding: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
         }
-        
-        /* Ajuste del contenedor de categoría para que no flote solo */
-        .container-gestion {
+
+        .container-gestion{
             margin: 0 !important;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+            width: 100%;
+            max-width: 900px;
         }
+
     </style>
+
 </head>
 <body>
     <div class="dashboard-container">
         
+
+        <!-- SIDEBAR -->
         <nav class="sidebar">
+
             <h2>Mi Sistema</h2>
             <a href="dashboard.html" class="menu-item active">👤 Mi Perfil</a>
             <a href="categoria_index.html" class="menu-item">📁 Categorías</a>
@@ -70,50 +86,228 @@
             <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
             <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Ingreso</a>
             <a href="listado_gastos.html"class = "menu-item">💸 Mis Gastos</a>
+                        <a href="presupuesto.html" class="menu-item">
+                💵 Presupuestos
+            </a>
             
             <div style="flex-grow: 1;"></div>
             <button onclick="logout()" class="btn btn-outline" style="width: 100%;">Cerrar Sesión</button>
         </nav>
 
+        <!-- CONTENIDO -->
         <main class="main-content">
+
             <div class="container container-gestion">
-                <h2>Nueva Categoría</h2>
-                
-                <form id="form-categoria" class="form-content active">
-                    <div class="label-group">
-                        <span class="label-text">Nombre de la Categoría</span>
-                        <input type="text" id="cat-nombre" placeholder="Ej: Alimentación, Salario..." required>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="label-group" style="flex:1">
-                            <span class="label-text">Movimiento (ID)</span>
-                            <input type="number" id="cat-tipo-mov" placeholder="1: Ing, 2: Gas" required>
-                        </div>
-                        <div class="label-group" style="flex:1">
-                            <span class="label-text">Clasificación (ID)</span>
-                            <input type="number" id="cat-tipo-cat" placeholder="ID Tipo" required>
-                        </div>
+
+                <h2>Gestión de Categorías</h2>
+
+                <!-- TABLA -->
+                <div id="visualizacion-section">
+
+                    <div class="table-container">
+
+                        <table>
+
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Tipo Mov.</th>
+                                    <th>Clasificación</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="lista-categorias">
+                            </tbody>
+
+                        </table>
+
                     </div>
 
-                    <button type="submit" class="btn" style="width: 100%;">Guardar Categoría</button>
-                    <p id="cat-msg" class="msg"></p>
-                </form>
+                </div>
 
                 <div class="divider"></div>
-                <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem;">
-                    Las categorías ayudan a organizar tus movimientos.
-                </p>
+
+                <!-- BOTONES -->
+                <div class="actions">
+
+                    <button
+                        class="btn btn-nav"
+                        onclick="mostrarSeccion('crear')">
+
+                        <span>➕</span>
+                        Crear Nueva Categoría
+
+                    </button>
+
+                </div>
+
+                <!-- CREAR -->
+                <div id="seccion-crear" class="hidden section-form">
+
+                    <h3>Crear Categoría</h3>
+
+                    <form id="form-categoria" class="form-content active">
+
+                        <input
+                            type="text"
+                            id="cat-nombre"
+                            placeholder="Nombre de Categoría"
+                            required
+                        >
+
+                        <div class="row">
+
+                            <select id="cat-tipo-mov" required>
+
+                                <option value="" disabled selected>
+                                    Tipo Movimiento
+                                </option>
+
+                                <option value="1">
+                                    💰 Ingreso
+                                </option>
+
+                                <option value="2">
+                                    💸 Egreso
+                                </option>
+
+                            </select>
+
+                            <select id="cat-tipo-cat" required>
+
+                                <option value="" disabled selected>
+                                    Tipo Categoría
+                                </option>
+
+                                <option value="1">
+                                    📌 Fijo
+                                </option>
+
+                                <option value="2">
+                                    🔄 Variable
+                                </option>
+
+                                <option value="3">
+                                    🐜 Hormiga
+                                </option>
+
+                                <option value="4">
+                                    📈 Inversión
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <button type="submit" class="btn">
+                            Guardar Categoría
+                        </button>
+
+                        <button
+                            type="button"
+                            class="btn btn-outline"
+                            onclick="ocultarSecciones()">
+
+                            Cancelar
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <!-- EDITAR -->
+                <div id="seccion-editar" class="hidden section-form">
+
+                    <h3>Editar Categoría</h3>
+
+                    <form id="form-edit-categoria" class="form-content active">
+
+                        <input type="hidden" id="edit-id">
+
+                        <input
+                            type="text"
+                            id="edit-nombre"
+                            placeholder="Nuevo Nombre"
+                        >
+
+                        <div class="row">
+
+                            <select id="edit-tipo-mov">
+
+                                <option value="1">
+                                    💰 Ingreso
+                                </option>
+
+                                <option value="2">
+                                    💸 Egreso
+                                </option>
+
+                            </select>
+
+                            <select id="edit-tipo-cat">
+
+                                <option value="1">
+                                    📌 Fijo
+                                </option>
+
+                                <option value="2">
+                                    🔄 Variable
+                                </option>
+
+                                <option value="3">
+                                    🐜 Hormiga
+                                </option>
+
+                                <option value="4">
+                                    📈 Inversión
+                                </option>
+
+                            </select>
+
+                        </div>
+
+                        <div class="row">
+
+                            <button type="submit" class="btn">
+                                Actualizar Datos
+                            </button>
+
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="ocultarSecciones()">
+
+                                Cancelar
+
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
             </div>
+
         </main>
+
     </div>
 
     <script src="js/categoria_config.js"></script>
+
     <script>
-        function logout() {
+
+        function logout(){
+
             localStorage.removeItem("token");
+
             window.location.href = "usuario_index.html";
+
         }
+
     </script>
+
 </body>
 </html>
