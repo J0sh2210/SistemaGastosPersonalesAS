@@ -10,14 +10,16 @@ class IngresoService:
             EXEC sp_RegistrarIngreso 
             @Concepto = :Concepto, 
             @Monto = :Monto, 
-            @IdCliente = :IdCliente
+            @IdCliente = :IdCliente,
+            @IdMovimiento = :IdMovimiento
         """)
         
         # Ejecutamos y extraemos la fila
         result = db.execute(query, {
             "Concepto": ingreso.Concepto,
             "Monto": ingreso.Monto,
-            "IdCliente": ingreso.IdCliente
+            "IdCliente": ingreso.IdCliente,
+            "IdMovimiento": ingreso.IdMovimiento
         }).fetchone()
         
         db.commit()

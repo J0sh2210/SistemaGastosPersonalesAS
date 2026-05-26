@@ -31,9 +31,12 @@ def crear_gasto_recurrente(gasto: CrearGastoRecurrente, db: Session = Depends(ge
     db.refresh(nuevo)
     return nuevo
 
-@router.get("/", response_model=List[LeerGastoRecurrente])
-def listar_gastos_recurrentes(db: Session = Depends(get_db)):
-    return db.query(GastoRecurrente).filter(GastoRecurrente.Activo == True).all()
+@router.get("/{id_cliente}", response_model=List[LeerGastoRecurrente])
+def listar_gastos_recurrentes(id_cliente: int, db: Session = Depends(get_db)):
+    return db.query(GastoRecurrente).filter(
+        GastoRecurrente.Activo == True, 
+        GastoRecurrente.IdCliente == id_cliente
+    ).all()
 
 @router.put("/{id}", response_model=LeerGastoRecurrente)
 def actualizar_gasto_recurrente(id: int, datos: ActualizarGastoRecurrente, db: Session = Depends(get_db)):

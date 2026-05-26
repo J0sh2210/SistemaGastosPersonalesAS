@@ -48,9 +48,9 @@ document.getElementById('form-ingreso').addEventListener('submit', async (e) => 
         const ingresoData = {
             Concepto: document.getElementById('ing-concepto').value,
             Monto: parseFloat(document.getElementById('ing-monto').value),
-            IdCliente: parseInt(idDelCliente) // Usamos el ID automático
+            IdCliente: parseInt(idDelCliente), // Usamos el ID automático
+            IdMovimiento: document.getElementById('tipo-movimiento').value === "egreso" ? 1 : 2
         };
-
         // 3. Enviamos la petición POST para guardar el ingreso
         const response = await fetch(`${API_URL}/ingresos/`, {
             method: 'POST',
@@ -64,7 +64,7 @@ document.getElementById('form-ingreso').addEventListener('submit', async (e) => 
         // 4. Mostramos el resultado en pantalla
         if (response.ok) {
             msg.style.color = "#10b981"; // Color verde
-            msg.innerText = "✔ Ingreso registrado con éxito";
+            msg.innerText = "Movimiento  registrado con éxito";
             document.getElementById('form-ingreso').reset(); // Limpiamos el formulario
         } else {
             const errorData = await response.json();
