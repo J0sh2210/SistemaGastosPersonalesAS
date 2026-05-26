@@ -17,6 +17,7 @@ class IngresoBase(BaseModel):
 # Al crear un ingreso, necesitamos saber de qué cliente es
 class IngresoCreate(IngresoBase):
     IdCliente: int
+    IdMovimiento: int
 
 # Al editar, solo recibimos concepto y monto (heredados de IngresoBase)
 class IngresoUpdate(IngresoBase):

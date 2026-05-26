@@ -28,41 +28,47 @@
 <body>
 
     <div class="dashboard-container">
+        
         <nav class="sidebar">
             <h2>Mi Sistema</h2>
-            <a href="dashboard.html" class="menu-item">👤 Mi Perfil</a>
+            <a href="dashboard.html" class="menu-item active">👤 Mi Perfil</a>
             <a href="categoria_index.html" class="menu-item">📁 Categorías</a>
-            <a href="crear_gasto_recurrente.html" class="menu-item">➕ Crear Gasto</a>
+            <a href="crear_gasto_recurrente.html" class="menu-item">➕ Gasto Recurrente</a>
             <a href="listar_gastos_recurrentes.html" class="menu-item">📋 Lista Gastos</a>
             <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
             <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Ingreso</a>
+            <a href="listado_gastos.html"class = "menu-item">💸 Mis Gastos</a>
             
             <div style="flex-grow: 1;"></div>
             <button onclick="logout()" class="btn btn-outline" style="width: 100%;">Cerrar Sesión</button>
         </nav>
 
         <main class="main-content">
-            <div class="container-ingreso">
-                <h2>Registrar Nuevo Ingreso</h2>
-                <p class="subtitle">Añade tus entradas de dinero para actualizar tu balance.</p>
+            <div class="container-ingreso" class="doblecolumna">
+                <div class="container-ingreso">
+                    <h2>Registrar Movimiento</h2>
+                    <p class="subtitle">Registra tus ingresos y gastos</p>
 
-                <form id="form-ingreso">
-                    <div class="form-group">
-                        <label for="ing-concepto">Concepto</label>
-                        <input type="text" id="ing-concepto" placeholder="Ej: Sueldo mensual, Venta de garage..." required>
-                    </div>
+                    <form id="form-ingreso">
+                        <div class="form-group">
+                            <label for="ing-concepto">Concepto</label>
+                            <input type="text" id="ing-concepto" placeholder="Ej: Sueldo mensual, Compras del sábado..." required>
+                        </div>
 
-                    <div class="form-group">
-                        <label for="ing-monto">Monto (Q)</label>
-                        <input type="number" step="0.01" id="ing-monto" placeholder="0.00" required>
-                    </div>
-
-                    <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 20px;">
-                        ✔ Guardar Ingreso
-                    </button>
-                </form>
-
-                <p id="ing-msg" class="msg-status"></p>
+                        <div class="form-group">
+                            <label for="ing-monto">Monto (Q)</label>
+                            <input type="number" step="0.01" id="ing-monto" placeholder="0.00" required>
+                        </div>
+                        <select id="tipo-movimiento" style="margin-top: 15px; width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #ccc;">
+                            <option value="ingreso">Ingreso</option>
+                            <option value="egreso">Egreso</option> </select>
+                    
+                            <button type="submit" class="btn btn-success" style="width: 100%; margin-top: 20px;">
+                            Guardar
+                            </button>
+                    </form>
+                    <p id="ing-msg" class="msg-status"></p>
+                </div>
             </div>
         </main>
     </div>

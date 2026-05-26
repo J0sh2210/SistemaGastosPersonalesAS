@@ -105,12 +105,13 @@ async function cargarPerfil() {
 
         if (response.ok) {
             const data = await response.json();
-            
-            // Mapeo flexible del ID devuelto por tu BD para guardarlo de respaldo
-            const idDetectado = data.id_usuario || data.id_cliente || data.IdCliente || data.id;
-            if (idDetectado) {
-                localStorage.setItem("IdCliente", String(idDetectado));
-            }
+            localStorage.setItem("IdCliente", data.IdCliente);
+            // Llenar datos en el HTML
+            document.getElementById('prof-user').innerText = data.usuario;
+            document.getElementById('prof-name').innerText = `${data.nombre} ${data.segundoNombre || ''}`.trim();
+            document.getElementById('prof-lastname').innerText = `${data.apellido} ${data.segundoApellido || ''}`.trim();
+            // Redirigir al nuevo dashboard
+            window.location.href = "dashboard.html";
 
             if (document.getElementById('prof-user')) document.getElementById('prof-user').innerText = data.usuario || data.username || "";
             if (document.getElementById('prof-name')) document.getElementById('prof-name').innerText = `${data.nombre || data.primerNombre || ''} ${data.segundoNombre || ''}`.trim();
@@ -127,6 +128,12 @@ async function cargarPerfil() {
 
 // --- CERRAR SESIÓN ---
 function logout() {
-    localStorage.clear();
-    window.location.href = "usuario_index.html";
+    localStorage.removeItem("token");
+    localStorage.removeItem("IdCliente");
+    document.getElementById('auth-section').classList.remove('hidden');
+    document.getElementById('profile-section').classList.add('hidden');
+    
+    // Limpiar formularios
+    document.getElementById('form-login').reset();
+    document.getElementById('form-register').reset();
 }
