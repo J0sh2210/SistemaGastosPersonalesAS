@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="css/presupuesto.css">
 
     <style>
-
         body{
             display: block !important;
             background-color: var(--bg-color);
@@ -67,19 +66,15 @@
             width: 100%;
             max-width: 950px;
         }
-
     </style>
-
 </head>
 <body>
 
     <div class="dashboard-container">
 
         <nav class="sidebar">
-
             <h2>Mi Sistema</h2>
 
-           
             <a href="dashboard.html" class="menu-item">
                 👤 Mi Perfil
             </a>
@@ -114,11 +109,8 @@
                 onclick="logout()"
                 class="btn btn-outline"
                 style="width:100%;">
-
                 Cerrar Sesión
-
             </button>
-
         </nav>
 
         <main class="main-content">
@@ -128,9 +120,7 @@
                 <h2>Gestión de Presupuestos</h2>
 
                 <div class="table-container">
-
                     <table>
-
                         <thead>
                             <tr>
                                 <th>Monto</th>
@@ -139,35 +129,25 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-
                         <tbody id="lista-presupuestos">
                         </tbody>
-
                     </table>
-
                 </div>
-
+                
                 <div class="divider"></div>
 
                 <div class="actions">
-
                     <button
                         class="btn btn-nav"
                         onclick="mostrarSeccion('crear')">
-
                         ➕ Crear Presupuesto
-
                     </button>
-
                 </div>
 
-                <!-- CREAR -->
                 <div id="seccion-crear" class="hidden section-form">
-
                     <h3>Crear Presupuesto</h3>
 
                     <form id="form-presupuesto">
-
                         <input
                             type="number"
                             id="pres-monto"
@@ -176,45 +156,43 @@
                         >
 
                         <div class="row">
-
                             <select id="pres-categoria">
-
                                 <option value="">
                                     Seleccione una categoría
                                 </option>
-
                             </select>
 
                             <input
-                                type="text"
+                                type="month"
                                 id="pres-mes"
                                 placeholder="Mes"
                                 required
+                                readonly
                             >
-
                         </div>
 
                         <input
                             type="hidden"
                             id="id-usuario"
-                            value="1"
                         >
 
                         <button type="submit" class="btn">
-                            Guardar
+                            Guardar presupuesto
                         </button>
 
+                        <button
+                            type="button"
+                            class="btn btn-outline"
+                            onclick="ocultarSecciones()">
+                            Cancelar
+                        </button>
                     </form>
-
                 </div>
 
-                <!-- EDITAR -->
                 <div id="seccion-editar" class="hidden section-form">
-
                     <h3>Editar Presupuesto</h3>
 
                     <form id="form-edit-presupuesto">
-
                         <input type="hidden" id="edit-id">
 
                         <input
@@ -224,29 +202,33 @@
                         >
 
                         <div class="row">
-
                             <select id="edit-categoria">
-
                                 <option value="">
                                     Seleccione una categoría
                                 </option>
-
                             </select>
 
-                            <input
-                                type="text"
+                           <input
+                                type="month"
                                 id="edit-mes"
                                 placeholder="Mes"
+                                readonly
                             >
-
                         </div>
+                        
+                        <div class="row">
+                            <button type="submit" class="btn">
+                                Actualizar
+                            </button>
 
-                        <button type="submit" class="btn">
-                            Actualizar
-                        </button>
-
+                            <button
+                                type="button"
+                                class="btn btn-outline"
+                                onclick="ocultarSecciones()">
+                                Cancelar
+                            </button>
+                        </div>
                     </form>
-
                 </div>
 
             </div>

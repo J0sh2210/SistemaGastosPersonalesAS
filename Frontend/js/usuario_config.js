@@ -1,4 +1,3 @@
-// URL base de tu API FastAPI (Asegúrate de que el puerto sea el correcto, usualmente 8000)
 const API_URL = "http://127.0.0.1:8000";
 
 // --- LÓGICA DE INTERFAZ (TABS) ---
@@ -17,7 +16,7 @@ function showForm(formType) {
     }
 }
 
-// --- VERIFICAR SI YA HAY SESIÓN INICIADA ---
+// --- VERIFICAR SESIÓN ACTIVA ---
 document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -31,7 +30,6 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
     const errorMsg = document.getElementById('login-error');
     errorMsg.innerText = "";
 
-    // FastAPI espera OAuth2PasswordRequestForm (application/x-www-form-urlencoded)
     const formData = new URLSearchParams();
     formData.append("username", document.getElementById('login-username').value);
     formData.append("password", document.getElementById('login-password').value);
@@ -47,7 +45,7 @@ document.getElementById('form-login').addEventListener('submit', async (e) => {
 
         if (response.ok) {
             localStorage.setItem("token", data.access_token);
-            cargarPerfil();
+            await cargarPerfil(); 
         } else {
             errorMsg.innerText = data.detail || "Error al iniciar sesión";
         }
@@ -61,9 +59,7 @@ document.getElementById('form-register').addEventListener('submit', async (e) =>
     e.preventDefault();
     const msg = document.getElementById('reg-msg');
     msg.innerText = "";
-    msg.style.color = "var(--text-main)";
 
-    // Construir el JSON como lo pide tu Schema 'RegistroUsuario'
     const bodyData = {
         username: document.getElementById('reg-username').value,
         password: document.getElementById('reg-password').value,
@@ -104,9 +100,7 @@ async function cargarPerfil() {
     try {
         const response = await fetch(`${API_URL}/usuarios/perfil`, {
             method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
@@ -119,8 +113,12 @@ async function cargarPerfil() {
             // Redirigir al nuevo dashboard
             window.location.href = "dashboard.html";
 
+            if (document.getElementById('prof-user')) document.getElementById('prof-user').innerText = data.usuario || data.username || "";
+            if (document.getElementById('prof-name')) document.getElementById('prof-name').innerText = `${data.nombre || data.primerNombre || ''} ${data.segundoNombre || ''}`.trim();
+            if (document.getElementById('prof-lastname')) document.getElementById('prof-lastname').innerText = `${data.apellido || data.primerApellido || ''} ${data.segundoApellido || ''}`.trim();
+            
+            window.location.href = "dashboard.html";
         } else {
-            // Token inválido o expirado
             logout();
         }
     } catch (error) {

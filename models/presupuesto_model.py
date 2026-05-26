@@ -8,18 +8,15 @@ class PresupuestoCreate(BaseModel):
     mes_aplicacion: str
     id_usuario: int
 
-
 class PresupuestoUpdate(BaseModel):
     monto_presupuesto: Optional[float] = None
     id_categoria: Optional[int] = None
     mes_aplicacion: Optional[str] = None
     id_usuario: Optional[int] = None
 
-
 class PresupuestoResponse(BaseModel):
     id_presupuesto: int
     monto_presupuesto: float
-    id_categoria: Optional[int]
+    categoria: str
     mes_aplicacion: str
     id_usuario: int
-

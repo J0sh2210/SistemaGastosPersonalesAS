@@ -27,11 +27,13 @@ th {
     text-transform: uppercase;
     border-bottom: 2px solid var(--border-color);
     padding: 10px 5px;
+    text-align: center;
 }
 
 td {
     padding: 12px 5px;
     font-size: 0.9rem;
+    text-align: center;
     border-bottom: 1px solid #f1f5f9;
 }
 

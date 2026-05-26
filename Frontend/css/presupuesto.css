@@ -27,11 +27,13 @@ th {
     text-transform: uppercase;
     border-bottom: 2px solid var(--border-color);
     padding: 10px 5px;
+    text-align: center;
 }
 
 td {
     padding: 12px 5px;
     font-size: 0.9rem;
+    text-align: center;
     border-bottom: 1px solid #f1f5f9;
 }
 
@@ -61,19 +63,12 @@ td {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 @keyframes slideDown {
-    from { 
-        opacity: 0; 
-        transform: translateY(-10px); 
-    }
-
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Botones */
@@ -118,38 +113,17 @@ td {
     animation: fadeIn 0.3s ease;
 }
 
-.toast.success {
-    background-color: #16a34a;
-}
-
-.toast.error {
-    background-color: #dc2626;
-}
+.toast.success { background-color: #16a34a; }
+.toast.error { background-color: #dc2626; }
 
 @keyframes fadeIn {
-    from { 
-        opacity: 0; 
-        transform: translateY(10px); 
-    }
-
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-
-    .container-gestion {
-        max-width: 95% !important;
-    }
-
-    .row {
-        flex-direction: column;
-    }
-
-    table {
-        font-size: 0.8rem;
-    }
+    .container-gestion { max-width: 95% !important; }
+    .row { flex-direction: column; }
+    table { font-size: 0.8rem; }
 }
