@@ -384,7 +384,6 @@ CREATE OR ALTER PROCEDURE sp_CrearPresupuesto
 AS
 BEGIN
     SET NOCOUNT ON;
-
     BEGIN TRY
 
         IF NOT EXISTS (SELECT 1 FROM Cliente WHERE IdCliente = @IdUsuario)
@@ -393,11 +392,15 @@ BEGIN
         IF @MontoPresupuesto <= 0
             THROW 50002, 'El monto debe ser mayor a 0', 1;
 
+        -- Corrección de contingencia: Si es nulo, toma la primera categoría disponible si 'General' no existe
         IF @IdCategoria IS NULL
         BEGIN
             SELECT TOP 1 @IdCategoria = IdCategoria
             FROM CategoriaMovimiento
             WHERE NombreCategoria = 'General';
+            
+            IF @IdCategoria IS NULL
+                SELECT TOP 1 @IdCategoria = IdCategoria FROM CategoriaMovimiento;
         END
 
         IF NOT EXISTS (SELECT 1 FROM CategoriaMovimiento WHERE IdCategoria = @IdCategoria)
@@ -415,41 +418,28 @@ BEGIN
         )
             THROW 50005, 'Ya existe un presupuesto para esta categoria y mes', 1;
 
-        INSERT INTO PresupuestoMensual
-        (
-            MontoPresupuesto,
-            IdCategoria,
-            MesAplicacion,
-            IdUsuario,
-            PorcentajeAlerta
-        )
-        VALUES
-        (
-            @MontoPresupuesto,
-            @IdCategoria,
-            @MesAplicacion,
-            @IdUsuario,
-            @PorcentajeAlerta
-        );
+        INSERT INTO PresupuestoMensual (MontoPresupuesto, IdCategoria, MesAplicacion, IdUsuario, PorcentajeAlerta)
+        VALUES (@MontoPresupuesto, @IdCategoria, @MesAplicacion, @IdUsuario, @PorcentajeAlerta);
 
+        -- CORRECCIÓN CRÍTICA: Retornamos p.IdCategoria para que el API y el JS tengan el ID numérico
         SELECT
             p.IdPresupuesto,
             p.MontoPresupuesto,
             c.NombreCategoria AS Categoria,
             p.MesAplicacion,
             p.IdUsuario,
+            p.IdCategoria, -- 👈 Enviado explícitamente al mapeo de Python
             p.PorcentajeAlerta
         FROM PresupuestoMensual p
-        INNER JOIN CategoriaMovimiento c
-            ON p.IdCategoria = c.IdCategoria
+        INNER JOIN CategoriaMovimiento c ON p.IdCategoria = c.IdCategoria
         WHERE p.IdPresupuesto = SCOPE_IDENTITY();
 
     END TRY
-
     BEGIN CATCH
         THROW;
     END CATCH
 END;
+GO
 -- 7. SP para Validar Presupuesto Mensual (Calcula el porcentaje gastado y retorna estado)
 CREATE OR ALTER PROCEDURE sp_ValidarPresupuesto
 (
@@ -460,108 +450,66 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @TotalGastado DECIMAL(12,2);
-    DECLARE @MontoPresupuesto DECIMAL(12,2);
-    DECLARE @PorcentajeUsado DECIMAL(12,2);
-    DECLARE @PorcentajeAlerta DECIMAL(5,2);
-    DECLARE @Estado VARCHAR(30);
-    DECLARE @NombreCategoria VARCHAR(50);
+    DECLARE @TotalGastado DECIMAL(12,2) = 0;
+    DECLARE @MontoPresupuesto DECIMAL(12,2) = 0;
+    DECLARE @PorcentajeUsado DECIMAL(12,2) = 0;
+    DECLARE @PorcentajeAlerta DECIMAL(5,2) = 80;
+    DECLARE @Estado VARCHAR(30) = 'NORMAL';
+    DECLARE @NombreCategoria VARCHAR(50) = 'Sin Categoría';
 
     BEGIN TRY
-
-        -- Obtener presupuesto
+        -- 1. Obtener los datos del presupuesto
         SELECT TOP 1
             @MontoPresupuesto = p.MontoPresupuesto,
             @PorcentajeAlerta = p.PorcentajeAlerta,
             @NombreCategoria = c.NombreCategoria
         FROM PresupuestoMensual p
-        INNER JOIN CategoriaMovimiento c
-            ON p.IdCategoria = c.IdCategoria
+        INNER JOIN CategoriaMovimiento c ON p.IdCategoria = c.IdCategoria
         WHERE p.IdUsuario = @IdUsuario
           AND p.IdCategoria = @IdCategoria;
 
-        IF @MontoPresupuesto IS NULL
-            THROW 50001, 'No existe presupuesto', 1;
+        -- Si no hay presupuesto, enviamos valores vacíos limpios para que el JS no se rompa
+        IF @MontoPresupuesto IS NULL OR @MontoPresupuesto = 0
+        BEGIN
+            SELECT 
+                ISNULL(@NombreCategoria, 'Sin Presupuesto') AS categoria, 
+                'NORMAL' AS estado, 
+                0.00 AS gastado, 
+                0.00 AS limite_presupuesto, 
+                0.00 AS porcentaje_usado, 
+                0 AS mostrar_alerta;
+            RETURN;
+        END
 
-        -- Calcular gasto del mes actual
+        -- 2. Calcular gasto real usando el MES y AÑO de los movimientos reales (IdTipo = 2 es Egreso)
         SELECT
-            @TotalGastado = ISNULL(SUM(Monto),0)
+            @TotalGastado = ISNULL(SUM(Monto), 0)
         FROM Movimiento
         WHERE IdCliente = @IdUsuario
           AND IdCategoria = @IdCategoria
           AND IdTipo = 2
-          AND MONTH(FechaMovimiento) = MONTH(GETDATE())
+          AND MONTH(FechaMovimiento) = MONTH(GETDATE())  -- 👈 Filtro dinámico real por mes numérico
           AND YEAR(FechaMovimiento) = YEAR(GETDATE());
 
-        -- Porcentaje usado
-        IF @MontoPresupuesto = 0
-            SET @PorcentajeUsado = 0;
-        ELSE
-            SET @PorcentajeUsado = (@TotalGastado / @MontoPresupuesto) * 100;
+        -- 3. Calcular porcentaje de forma segura
+        SET @PorcentajeUsado = (@TotalGastado / @MontoPresupuesto) * 100;
 
-        -- Estado del presupuesto
+        -- 4. Evaluar estados para los colores de la barra
         IF @PorcentajeUsado >= 100
             SET @Estado = 'EXCEDIDO';
         ELSE IF @PorcentajeUsado >= @PorcentajeAlerta
             SET @Estado = 'ALERTA';
-        ELSE
-            SET @Estado = 'NORMAL';
 
-        -- Insertar alerta SOLO si aplica y no existe
-        IF @Estado <> 'NORMAL'
-        BEGIN
-            IF NOT EXISTS (
-                SELECT 1
-                FROM Alerta
-                WHERE IdUsuario = @IdUsuario
-                  AND IdCategoria = @IdCategoria
-                  AND Mes = MONTH(GETDATE())
-                  AND Anio = YEAR(GETDATE())
-                  AND TipoAlerta = @Estado
-            )
-            BEGIN
-                INSERT INTO Alerta
-                (
-                    IdUsuario,
-                    IdCategoria,
-                    TipoAlerta,
-                    Mensaje,
-                    Gastado,
-                    LimitePresupuesto,
-                    Porcentaje,
-                    Mes,
-                    Anio
-                )
-                VALUES
-                (
-                    @IdUsuario,
-                    @IdCategoria,
-                    @Estado,
-                    CONCAT(
-                        'Categoria: ', @NombreCategoria,
-                        ' | Gastado: Q', @TotalGastado,
-                        ' | Limite: Q', @MontoPresupuesto
-                    ),
-                    @TotalGastado,
-                    @MontoPresupuesto,
-                    @PorcentajeUsado,
-                    MONTH(GETDATE()),
-                    YEAR(GETDATE())
-                );
-            END
-        END
-
-        -- RESPUESTA PARA API
+        -- 5. RESPUESTA LIMPIA DIRECTA PARA TU API
         SELECT
             @NombreCategoria AS categoria,
             @Estado AS estado,
             @TotalGastado AS gastado,
             @MontoPresupuesto AS limite_presupuesto,
-            ROUND(@PorcentajeUsado,2) AS porcentaje_usado,
+            ROUND(@PorcentajeUsado, 2) AS porcentaje_usado,
             CASE WHEN @Estado = 'NORMAL' THEN 0 ELSE 1 END AS mostrar_alerta;
 
     END TRY
-
     BEGIN CATCH
         THROW;
     END CATCH

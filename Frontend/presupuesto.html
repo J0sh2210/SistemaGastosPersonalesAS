@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="css/presupuesto.css">
 
     <style>
-
         body{
             display: block !important;
             background-color: var(--bg-color);
@@ -67,36 +66,13 @@
             width: 100%;
             max-width: 950px;
         }
-
-        .alerta-presupuesto{
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-weight: bold;
-            display: none;
-        }
-
-        .alerta{
-            background-color: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-
-        .excedido{
-            background-color: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
     </style>
-
 </head>
 <body>
 
     <div class="dashboard-container">
 
         <nav class="sidebar">
-
             <h2>Mi Sistema</h2>
 
             <a href="dashboard.html" class="menu-item">
@@ -133,11 +109,8 @@
                 onclick="logout()"
                 class="btn btn-outline"
                 style="width:100%;">
-
                 Cerrar Sesión
-
             </button>
-
         </nav>
 
         <main class="main-content">
@@ -146,16 +119,8 @@
 
                 <h2>Gestión de Presupuestos</h2>
 
-                <!-- ALERTA -->
-                <div
-                    id="alerta-presupuesto"
-                    class="alerta-presupuesto">
-                </div>
-
                 <div class="table-container">
-
                     <table>
-
                         <thead>
                             <tr>
                                 <th>Monto</th>
@@ -164,38 +129,25 @@
                                 <th>Acciones</th>
                             </tr>
                         </thead>
-
                         <tbody id="lista-presupuestos">
                         </tbody>
-
                     </table>
-
                 </div>
                 
-                <h3>📊 Progreso del presupuesto</h3>
-                <div id="contenedor-barras"></div>
-
                 <div class="divider"></div>
 
                 <div class="actions">
-
                     <button
                         class="btn btn-nav"
                         onclick="mostrarSeccion('crear')">
-
                         ➕ Crear Presupuesto
-
                     </button>
-
                 </div>
 
-                <!-- CREAR -->
                 <div id="seccion-crear" class="hidden section-form">
-
                     <h3>Crear Presupuesto</h3>
 
                     <form id="form-presupuesto">
-
                         <input
                             type="number"
                             id="pres-monto"
@@ -204,22 +156,19 @@
                         >
 
                         <div class="row">
-
                             <select id="pres-categoria">
-
                                 <option value="">
                                     Seleccione una categoría
                                 </option>
-
                             </select>
 
                             <input
-                                type="text"
+                                type="month"
                                 id="pres-mes"
                                 placeholder="Mes"
                                 required
+                                readonly
                             >
-
                         </div>
 
                         <input
@@ -235,22 +184,15 @@
                             type="button"
                             class="btn btn-outline"
                             onclick="ocultarSecciones()">
-
                             Cancelar
-
                         </button>
-
                     </form>
-
                 </div>
 
-                <!-- EDITAR -->
                 <div id="seccion-editar" class="hidden section-form">
-
                     <h3>Editar Presupuesto</h3>
 
                     <form id="form-edit-presupuesto">
-
                         <input type="hidden" id="edit-id">
 
                         <input
@@ -260,22 +202,20 @@
                         >
 
                         <div class="row">
-
                             <select id="edit-categoria">
-
                                 <option value="">
                                     Seleccione una categoría
                                 </option>
-
                             </select>
 
-                            <input
-                                type="text"
+                           <input
+                                type="month"
                                 id="edit-mes"
                                 placeholder="Mes"
+                                readonly
                             >
-
                         </div>
+                        
                         <div class="row">
                             <button type="submit" class="btn">
                                 Actualizar
@@ -285,13 +225,10 @@
                                 type="button"
                                 class="btn btn-outline"
                                 onclick="ocultarSecciones()">
-
                                 Cancelar
-
                             </button>
                         </div>
                     </form>
-
                 </div>
 
             </div>
@@ -301,8 +238,6 @@
     </div>
 
     <script src="js/presupuesto.js"></script>
-
-    
 
 </body>
 </html>

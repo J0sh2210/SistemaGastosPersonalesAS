@@ -20,11 +20,3 @@ class PresupuestoResponse(BaseModel):
     categoria: str
     mes_aplicacion: str
     id_usuario: int
-
-class ValidarPresupuestoResponse(BaseModel):
-    categoria: str
-    estado: str
-    gastado: float
-    limite_presupuesto: float
-    porcentaje_usado: float
-    mostrar_alerta: bool

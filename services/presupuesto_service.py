@@ -2,8 +2,11 @@ from sqlalchemy import text
 from database import engine
 from sqlalchemy.exc import SQLAlchemyError
 from fastapi import HTTPException
+from database import SessionLocal
 
+# ==========================================
 # CREAR PRESUPUESTO
+# ==========================================
 def crear_presupuesto_mensual(presupuesto_data):
 
     query = text("""
@@ -16,16 +19,14 @@ def crear_presupuesto_mensual(presupuesto_data):
 
     try:
         with engine.connect() as conn:
-
-            result = conn.execute(query, {
-                "monto": presupuesto_data.monto_presupuesto,
-                "categoria": presupuesto_data.id_categoria,
-                "mes": presupuesto_data.mes_aplicacion,
-                "usuario": presupuesto_data.id_usuario
-            })
-
-            row = result.fetchone()
-            conn.commit()
+            with conn.begin():
+                result = conn.execute(query, {
+                    "monto": presupuesto_data.monto_presupuesto,
+                    "categoria": presupuesto_data.id_categoria,
+                    "mes": presupuesto_data.mes_aplicacion,
+                    "usuario": presupuesto_data.id_usuario
+                })
+                row = result.fetchone()
 
         if row:
             return {
@@ -39,7 +40,6 @@ def crear_presupuesto_mensual(presupuesto_data):
         return {"mensaje": "Presupuesto creado correctamente"}
 
     except SQLAlchemyError as e:
-
         error = str(e)
 
         if "La categoria no existe" in error:
@@ -57,38 +57,47 @@ def crear_presupuesto_mensual(presupuesto_data):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# ==========================================
 # OBTENER PRESUPUESTOS
+# ==========================================
 def obtener_presupuestos():
-
-    query = text("""
-        SELECT
-            p.IdPresupuesto,
-            p.MontoPresupuesto,
-            c.NombreCategoria,
-            p.MesAplicacion,
-            p.IdUsuario
-        FROM PresupuestoMensual p
-        INNER JOIN CategoriaMovimiento c
-            ON p.IdCategoria = c.IdCategoria
-    """)
-
-    with engine.connect() as conn:
-
-        result = conn.execute(query)
-
-        return [
-            {
+    db = SessionLocal() 
+    
+    try:
+        # Usamos INNER JOIN con CategoriaMovimiento para traer el NombreCategoria real sin errores
+        query = """
+            SELECT 
+                p.IdPresupuesto, 
+                p.MontoPresupuesto, 
+                c.NombreCategoria, 
+                p.IdCategoria, 
+                p.MesAplicacion, 
+                p.IdUsuario 
+            FROM PresupuestoMensual p
+            INNER JOIN CategoriaMovimiento c ON p.IdCategoria = c.IdCategoria
+        """
+        
+        result = db.execute(text(query)) 
+        
+        presupuestos = []
+        for row in result:
+            presupuestos.append({
                 "id_presupuesto": row[0],
-                "monto_presupuesto": float(row[1]),
-                "categoria": row[2],
-                "mes_aplicacion": row[3],
-                "id_usuario": row[4]
-            }
-            for row in result
-        ]
+                "monto_presupuesto": row[1],
+                "categoria": row[2],       
+                "id_categoria": row[3],    
+                "mes_aplicacion": row[4],
+                "id_usuario": row[5]
+            })
+        return presupuestos
+        
+    finally:
+        db.close()
 
 
+# ==========================================
 # ACTUALIZAR PRESUPUESTO
+# ==========================================
 def actualizar_presupuesto(id_presupuesto, data):
 
     campos = []
@@ -134,26 +143,30 @@ def actualizar_presupuesto(id_presupuesto, data):
         WHERE p.IdPresupuesto = :id
     """)
 
-    with engine.connect() as conn:
+    try:
+        with engine.connect() as conn:
+            with conn.begin():
+                conn.execute(update_query, valores)
+                result = conn.execute(select_query, {"id": id_presupuesto})
+                row = result.fetchone()
 
-        conn.execute(update_query, valores)
-        conn.commit()
+        if not row:
+            raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
 
-        result = conn.execute(select_query, {"id": id_presupuesto})
-        row = result.fetchone()
+        return {
+            "id_presupuesto": row[0],
+            "monto_presupuesto": float(row[1]),
+            "categoria": row[2],
+            "mes_aplicacion": row[3],
+            "id_usuario": row[4]
+        }
+    except SQLAlchemyError as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-    if not row:
-        raise HTTPException(status_code=404, detail="Presupuesto no encontrado")
 
-    return {
-        "id_presupuesto": row[0],
-        "monto_presupuesto": float(row[1]),
-        "categoria": row[2],
-        "mes_aplicacion": row[3],
-        "id_usuario": row[4]
-    }
-
+# ==========================================
 # ELIMINAR PRESUPUESTO
+# ==========================================
 def eliminar_presupuesto(id_presupuesto):
 
     query = text("""
@@ -161,47 +174,14 @@ def eliminar_presupuesto(id_presupuesto):
         WHERE IdPresupuesto = :id
     """)
 
-    with engine.connect() as conn:
-
-        result = conn.execute(query, {"id": id_presupuesto})
-        conn.commit()
-
-        if result.rowcount == 0:
-            return {"mensaje": "Presupuesto no encontrado"}
-
-    return {"mensaje": "Presupuesto eliminado correctamente"}
-
-
-# VALIDAR PRESUPUESTO (80% ALERTA)
-def validar_presupuesto(id_usuario, id_categoria):
-
-    query = text("""
-        EXEC sp_ValidarPresupuesto
-            @IdUsuario = :usuario,
-            @IdCategoria = :categoria
-    """)
-
     try:
         with engine.connect() as conn:
+            with conn.begin():
+                result = conn.execute(query, {"id": id_presupuesto})
 
-            result = conn.execute(query, {
-                "usuario": id_usuario,
-                "categoria": id_categoria
-            })
+                if result.rowcount == 0:
+                    return {"mensaje": "Presupuesto no encontrado"}
 
-            row = result.fetchone()
-
-            if not row:
-                return {"mensaje": "No se encontró información"}
-
-            return {
-                "categoria": row[0],
-                "estado": row[1],
-                "gastado": float(row[2]),
-                "limite_presupuesto": float(row[3]),
-                "porcentaje_usado": float(row[4]),
-                "mostrar_alerta": row[5]
-            }
-
+        return {"mensaje": "Presupuesto eliminado correctamente"}
     except SQLAlchemyError as e:
         raise HTTPException(status_code=500, detail=str(e))
