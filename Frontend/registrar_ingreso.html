@@ -45,6 +45,13 @@
                         </div>
                         
                         <div class="form-group">
+                            <label for="categoria">Categoría</label>
+                            <select id="categoria" required>
+                                <option value="">Selecciona una categoría</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
                             <label for="tipo">Tipo de Movimiento</label>
                             <select id="tipo" required>
                                 <option value="2">Ingreso</option>
@@ -56,7 +63,7 @@
                             Guardar Movimiento
                         </button>
                         
-                        <button type="button" onclick="ocultarFormulario()" style="width: 100%; padding: 12px; background-color: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                        <button type="button" onclick="ocultarFormulario()" style="width: 100%; padding: 12px; background-color: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; border-radius: 8px;">
                             Cerrar / Cancelar
                         </button>
 
@@ -71,6 +78,7 @@
                             <tr>
                                 <th>Concepto</th>
                                 <th>Monto</th>
+                                <th>Categoría</th>
                                 <th>Tipo</th>
                             </tr>
                         </thead>
@@ -78,7 +86,7 @@
                             </tbody>
                     </table>
 
-                    <button id="btnMostrarFormulario" onclick="mostrarFormulario()" style="width: 100%; padding: 12px; background-color: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 25px; font-size: 1rem;">
+                    <button id="btnMostrarFormulario" onclick="mostrarFormulario()" style="width: 100%; padding: 12px; background-color: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px;">
                         ➕ Registrar Nuevo Movimiento
                     </button>
                 </div>
