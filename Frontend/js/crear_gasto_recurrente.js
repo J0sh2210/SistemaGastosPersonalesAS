@@ -1,104 +1,183 @@
-// URL base de tu API FastAPI
 const API_URL = "http://127.0.0.1:8000";
+let gastoEditandoId = null;
+let listaGastosGlobal = [];
 
-// 1. CARGAR LA LISTA AL ABRIR LA PÁGINA
 document.addEventListener("DOMContentLoaded", () => {
     cargarListaRecurrentes();
 });
 
-// 2. FUNCIÓN PARA OBTENER Y MOSTRAR LOS GASTOS DEL USUARIO
+// 👉 NUEVAS FUNCIONES PARA CONTROLAR LA PANTALLA
+function mostrarFormulario() {
+    // Le quitamos la clase "oculto" para que se expanda suavemente
+    document.getElementById("panel-formulario").classList.remove("oculto"); 
+    
+    // Ocultamos el botón verde (puedes dejar esto con display)
+    document.getElementById("btnMostrarFormulario").style.display = "none"; 
+}
+
+function ocultarFormulario() {
+    // Le agregamos la clase "oculto" para que se encoja suavemente
+    document.getElementById("panel-formulario").classList.add("oculto"); 
+    
+    // Mostramos el botón verde de nuevo tras un pequeño retraso
+    setTimeout(() => {
+        document.getElementById("btnMostrarFormulario").style.display = "block"; 
+    }, 400); // 400ms espera a que termine la animación de cierre
+
+    // Limpiamos los campos
+    const form = document.getElementById("form-ingreso") || document.getElementById("formGasto");
+    if(form) form.reset();
+    
+    const msg = document.getElementById("ing-msg") || document.getElementById("mensaje");
+    if(msg) msg.innerText = "";
+}
+
+
 async function cargarListaRecurrentes() {
     const cuerpoTabla = document.getElementById("cuerpo-tabla-recurrentes");
     const idUsuarioActual = localStorage.getItem("IdCliente");
 
-    // Si no hay usuario logueado, no intentamos cargar la tabla
     if (!idUsuarioActual) {
-        cuerpoTabla.innerHTML = "<tr><td colspan='3'>Inicia sesión para ver tus gastos.</td></tr>";
+        cuerpoTabla.innerHTML = "<tr><td colspan='4'>Inicia sesión para ver tus gastos.</td></tr>";
         return;
     }
 
     try {
-        // 👉 AHORA LE PASAMOS EL ID DIRECTAMENTE A LA RUTA DEL BACKEND
         const response = await fetch(`${API_URL}/gastos-recurrentes/${idUsuarioActual}`);
         
         if (response.ok) {
             const gastos = await response.json();
-            
-            // Limpiamos la tabla antes de llenarla
+            listaGastosGlobal = gastos; 
             cuerpoTabla.innerHTML = "";
 
-            // Verificamos si el usuario tiene gastos registrados
             if (gastos.length === 0) {
-                cuerpoTabla.innerHTML = "<tr><td colspan='3' style='text-align: center;'>No tienes gastos recurrentes registrados.</td></tr>";
+                cuerpoTabla.innerHTML = "<tr><td colspan='4' style='text-align: center;'>No tienes gastos recurrentes registrados.</td></tr>";
                 return;
             }
 
-            // Recorremos los gastos y creamos una fila por cada uno
             gastos.forEach(gasto => {
+                const idDelGasto = gasto.IdGasto || gasto.IdGastoRecurrente; 
+
                 const fila = `
                     <tr>
                         <td>${gasto.Concepto}</td>
                         <td>Q${gasto.Monto}</td>
                         <td style="text-transform: capitalize;">${gasto.Frecuencia}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-accion" onclick="prepararEdicion(${idDelGasto})" title="Editar">✏️</button>
+                            <button class="btn-accion" onclick="eliminarGasto(${idDelGasto})" title="Eliminar">🗑️</button>
+                        </td>
                     </tr>
                 `;
                 cuerpoTabla.innerHTML += fila;
             });
-        } else {
-            console.error("Error al obtener los gastos del servidor.");
         }
     } catch (error) {
         console.error("Error de conexión al cargar la lista:", error);
     }
 }
 
-// 3. FUNCIÓN PARA CREAR UN NUEVO GASTO RECURRENTE
+async function eliminarGasto(idGasto) {
+    if (!idGasto) return;
+
+    if (confirm("¿Estás seguro de que deseas eliminar este gasto recurrente?")) {
+        try {
+            const response = await fetch(`${API_URL}/gastos-recurrentes/eliminar/${idGasto}`, {
+                method: "DELETE"
+            });
+
+            if (response.ok) {
+                alert("Gasto eliminado correctamente");
+                cargarListaRecurrentes(); 
+            } else {
+                alert("Hubo un problema al intentar eliminar el gasto.");
+            }
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+        }
+    }
+}
+
+function prepararEdicion(idGasto) {
+    // 1. Buscamos el gasto
+    const gasto = listaGastosGlobal.find(g => (g.IdGasto || g.IdGastoRecurrente) === idGasto);
+    if (!gasto) return;
+
+    // 2. Mostramos el formulario por si estaba oculto
+    mostrarFormulario();
+
+    // 3. Llenamos los inputs
+    document.getElementById("concepto").value = gasto.Concepto;
+    document.getElementById("monto").value = gasto.Monto;
+    document.getElementById("frecuencia").value = gasto.Frecuencia.toLowerCase();
+    
+    if (gasto.FechaInicio) {
+        document.getElementById("fechaInicio").value = gasto.FechaInicio.split("T")[0];
+    }
+
+    // 4. Activamos modo edición
+    gastoEditandoId = idGasto;
+    const btnSubmit = document.getElementById("btnGuardarGasto");
+    btnSubmit.innerText = "Actualizar Gasto";
+    btnSubmit.style.backgroundColor = "#f59e0b"; // Naranja
+}
+
+// Evento Submit (POST y PUT)
 document.getElementById("formGasto").addEventListener("submit", async function(e) {
     e.preventDefault();
 
     const idUsuarioActual = localStorage.getItem("IdCliente");
     const mensaje = document.getElementById("mensaje");
 
-    // Validación de seguridad por si expiró la sesión
     if (!idUsuarioActual) {
-        alert("Tu sesión ha expirado o no has iniciado sesión. Por favor, vuelve a ingresar.");
+        alert("Tu sesión ha expirado.");
         return; 
     }
 
-    // Armamos los datos tal cual los espera tu modelo Pydantic
-    const data = {
+    const dataPUT = {
         Concepto: document.getElementById("concepto").value,
         Monto: parseFloat(document.getElementById("monto").value),
-        FechaInicio: new Date(document.getElementById("fechaInicio").value).toISOString().split("T")[0],
-        Frecuencia: document.getElementById("frecuencia").value, // Asegúrate de que tu HTML envíe "mensual" en minúsculas
-        IdCliente: parseInt(idUsuarioActual)
+        Frecuencia: document.getElementById("frecuencia").value
     };
 
     try {
-        const response = await fetch(`${API_URL}/gastos-recurrentes/`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(data)
-        });
+        let response;
+
+        if (gastoEditandoId === null) {
+            // MODO CREAR (POST)
+            const dataPOST = {
+                ...dataPUT,
+                FechaInicio: new Date(document.getElementById("fechaInicio").value).toISOString().split("T")[0],
+                IdCliente: parseInt(idUsuarioActual)
+            };
+
+            response = await fetch(`${API_URL}/gastos-recurrentes/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataPOST)
+            });
+        } else {
+            // MODO EDITAR (PUT)
+            response = await fetch(`${API_URL}/gastos-recurrentes/${gastoEditandoId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(dataPUT)
+            });
+        }
 
         if (response.ok) {
-            mensaje.style.color = "green";
-            mensaje.innerText = "Gasto recurrente creado correctamente";
-            document.getElementById("formGasto").reset(); // Limpia el formulario
+            // Si todo sale bien, recargamos la tabla y ocultamos el formulario
+            cargarListaRecurrentes(); 
+            ocultarFormulario();
             
-            // 👉 ACTUALIZAMOS LA TABLA AL INSTANTE
-            cargarListaRecurrentes();
-
-            // Quitamos el mensaje de éxito después de 3 segundos
-            setTimeout(() => { mensaje.innerText = ""; }, 3000);
+            // Opcional: Una pequeña alerta de éxito
+            alert(gastoEditandoId ? "Gasto actualizado con éxito" : "Gasto creado con éxito");
             
         } else {
             const errorData = await response.json();
-            console.log("Error detallado del backend:", errorData);
+            console.error("Error del backend:", errorData);
             mensaje.style.color = "red";
-            mensaje.innerText = "Error al crear gasto. Revisa los datos.";
+            mensaje.innerText = "Error en la operación. Revisa los datos.";
         }
 
     } catch (error) {

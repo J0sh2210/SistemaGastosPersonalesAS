@@ -11,7 +11,8 @@ class IngresoService:
             @Concepto = :Concepto, 
             @Monto = :Monto, 
             @IdCliente = :IdCliente,
-            @IdMovimiento = :IdMovimiento
+            @IdMovimiento = :IdMovimiento,  -- 👉 Agregué la coma aquí
+            @IdCategoria = :IdCategoria
         """)
         
         # Ejecutamos y extraemos la fila
@@ -19,7 +20,8 @@ class IngresoService:
             "Concepto": ingreso.Concepto,
             "Monto": ingreso.Monto,
             "IdCliente": ingreso.IdCliente,
-            "IdMovimiento": ingreso.IdMovimiento
+            "IdMovimiento": ingreso.IdMovimiento,
+            "IdCategoria": ingreso.IdCategoria  # 👉 NUEVO: Le pasamos el dato al SP
         }).fetchone()
         
         db.commit()
@@ -49,3 +51,17 @@ class IngresoService:
             )
             
         return result._mapping
+    
+    @staticmethod
+    def obtener_por_cliente(db: Session, id_cliente: int):
+
+        query = text("""
+            SELECT TOP 5 * FROM Movimiento
+            WHERE IdCliente = :IdCliente
+        """)
+        
+
+        result = db.execute(query, {"IdCliente": id_cliente}).fetchall()
+        
+
+        return [row._mapping for row in result] if result else []

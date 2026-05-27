@@ -75,3 +75,12 @@ def generar_gastos_mensuales(db: Session = Depends(get_db)):
 @router.put("/desactivar/{id}")
 def desactivar(id: int, db: Session = Depends(get_db)):
     return desactivar_gasto_recurrente(db, id)
+
+@router.delete("/eliminar/{id}")
+def eliminar_gasto_recurrente(id: int, db: Session = Depends(get_db)):
+    gasto = db.query(GastoRecurrente).filter(GastoRecurrente.IdGastoRecurrente == id).first()
+    if not gasto:
+        raise HTTPException(status_code=404, detail="Gasto no encontrado")
+    db.delete(gasto)
+    db.commit()
+    return {"success": True, "message": "Eliminado correctamente"}
