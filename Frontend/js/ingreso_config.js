@@ -1,6 +1,7 @@
 // js/ingreso_config.js
 const API_URL = "http://127.0.0.1:8000";
 let idUsuarioActual = null; // Variable global para guardar el ID del cliente una vez obtenido
+let categoriasDisponibles = []; // Variable global para guardar las categorías
 
 // 1. Verificar sesión y cargar datos al entrar a la página
 document.addEventListener("DOMContentLoaded", async () => {
@@ -21,6 +22,9 @@ document.addEventListener("DOMContentLoaded", async () => {
             const datosUsuario = await resPerfil.json();
             idUsuarioActual = datosUsuario.IdCliente;
             
+            // Cargamos las categorías disponibles
+            await cargarCategorias();
+            
             // Ahora que sabemos quién es, cargamos su tabla de movimientos
             cargarListaMovimientos();
         }
@@ -28,6 +32,37 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Error obteniendo el perfil al cargar la página", error);
     }
 });
+
+// --------------------------------------------------------
+// 👉 CARGAR CATEGORÍAS DESDE LA BD
+// --------------------------------------------------------
+async function cargarCategorias() {
+    const token = localStorage.getItem("token");
+    const selectCategoria = document.getElementById("categoria");
+    
+    if (!token) return;
+    
+    try {
+        const response = await fetch(`${API_URL}/categorias/`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            categoriasDisponibles = await response.json();
+            selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
+            
+            categoriasDisponibles.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.IdCategoria;
+                option.textContent = cat.NombreCategoria;
+                selectCategoria.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error("Error al cargar las categorías:", error);
+    }
+}
 
 // --------------------------------------------------------
 // 👉 NUEVAS FUNCIONES PARA CONTROLAR LA PANTALLA
@@ -42,8 +77,8 @@ function ocultarFormulario() {
     document.getElementById("btnMostrarFormulario").style.display = "block"; // Muestra el botón
     
     // Limpiamos los campos y los mensajes al cerrar
-    document.getElementById("form-ingreso").reset();
-    document.getElementById("ing-msg").innerText = "";
+    document.getElementById("formMovimiento").reset();
+    document.getElementById("msg-status").innerText = "";
 }
 
 // 2. FUNCIÓN PARA OBTENER Y MOSTRAR LOS MOVIMIENTOS EN LA TABLA
@@ -66,22 +101,27 @@ async function cargarListaMovimientos() {
             const misMovimientos = movimientos.filter(mov => mov.IdCliente === idUsuarioActual);
 
             if (misMovimientos.length === 0) {
-                cuerpoTabla.innerHTML = "<tr><td colspan='3' style='text-align: center;'>No tienes movimientos registrados aún.</td></tr>";
+                cuerpoTabla.innerHTML = "<tr><td colspan='4' style='text-align: center;'>No tienes movimientos registrados aún.</td></tr>";
                 return;
             }
 
             misMovimientos.forEach(mov => {
                 console.log("Datos del movimiento:", mov);
-                const idTipo = parseInt(mov.IdTipo || mov.IdMovimiento); // Me aseguro de leerlo bien
+                const idTipo = parseInt(mov.IdMovimiento);
                 const esIngreso = idTipo === 2; 
                 
                 const tipoTexto = esIngreso ? "Ingreso" : "Egreso";
                 const colorTexto = esIngreso ? "#10b981" : "#ef4444";
 
+                // Obtener el nombre de la categoría
+                const categoria = categoriasDisponibles.find(cat => cat.IdCategoria === mov.IdCategoria);
+                const nombreCategoria = categoria ? categoria.NombreCategoria : "Sin categoría";
+
                 const fila = `
                     <tr>
                         <td>${mov.Concepto}</td>
                         <td>Q${mov.Monto}</td>
+                        <td>${nombreCategoria}</td>
                         <td style="color: ${colorTexto}; font-weight: bold;">${tipoTexto}</td>
                     </tr>
                 `;
@@ -94,10 +134,10 @@ async function cargarListaMovimientos() {
 }
 
 // 3. Evento al darle clic en "Guardar Movimiento"
-document.getElementById('form-ingreso').addEventListener('submit', async (e) => {
+document.getElementById('formMovimiento').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const msg = document.getElementById('ing-msg');
+    const msg = document.getElementById('msg-status');
     const token = localStorage.getItem("token");
     
     if (!token) {
@@ -116,11 +156,14 @@ document.getElementById('form-ingreso').addEventListener('submit', async (e) => 
 
     try {
         const ingresoData = {
-            Concepto: document.getElementById('ing-concepto').value,
-            Monto: parseFloat(document.getElementById('ing-monto').value),
-            IdCliente: parseInt(idUsuarioActual), 
-            IdMovimiento: document.getElementById('tipo-movimiento').value === "egreso" ? 1 : 2
+            Concepto: document.getElementById('concepto').value,
+            Monto: parseFloat(document.getElementById('monto').value),
+            IdCliente: parseInt(idUsuarioActual),
+            IdCategoria: parseInt(document.getElementById('categoria').value),
+            IdMovimiento: parseInt(document.getElementById('tipo').value)
         };
+
+        console.log("Datos a enviar:", ingresoData);
 
         const response = await fetch(`${API_URL}/ingresos/`, {
             method: 'POST',
@@ -133,8 +176,10 @@ document.getElementById('form-ingreso').addEventListener('submit', async (e) => 
 
         if (response.ok) {
             // 👉 MAGIA: Si se guardó bien, recargamos la tabla y ocultamos el formulario
-            alert("Movimiento registrado con éxito");
+            msg.style.color = "#10b981"; // Color verde
+            msg.innerText = "✅ Movimiento registrado con éxito";
             cargarListaMovimientos();
+            document.getElementById("formMovimiento").reset();
             ocultarFormulario();
             
         } else {
