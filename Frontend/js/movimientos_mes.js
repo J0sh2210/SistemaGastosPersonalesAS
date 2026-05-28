@@ -7,7 +7,6 @@ async function cargarMovimientos() {
     const mes = document.getElementById("selectMes").value;
     const anio = document.getElementById("inputAnio").value;
 
-    document.getElementById("titulo-resultados").textContent = `Cargando movimientos...`;
     document.getElementById("contenido-tabla").innerHTML = '<p class="loading">⏳ Cargando...</p>';
     document.getElementById("resumen").style.display = "none";
 
@@ -20,16 +19,12 @@ async function cargarMovimientos() {
         const movimientos = await res.json();
         actualizarVista(movimientos, parseInt(mes), parseInt(anio));
     } catch (e) {
-        document.getElementById("titulo-resultados").textContent = "Error al cargar movimientos";
         document.getElementById("contenido-tabla").innerHTML =
-            `<p class="empty-msg">❌ ${e.message}</p>`;
+            `<p class="empty-msg">❌ Error: ${e.message}</p>`;
     }
 }
 
 function actualizarVista(movimientos, mes, anio) {
-    document.getElementById("titulo-resultados").textContent =
-        `Movimientos de ${MESES[mes]} ${anio}`;
-
     if (!movimientos || movimientos.length === 0) {
         document.getElementById("contenido-tabla").innerHTML =
             '<p class="empty-msg">No hay movimientos para este mes.</p>';
