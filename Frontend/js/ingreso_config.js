@@ -1,9 +1,10 @@
 // js/ingreso_config.js
 const API_URL = "http://127.0.0.1:8000";
-let idUsuarioActual = null; // Variable global para guardar el ID del cliente una vez obtenido
-let categoriasDisponibles = []; // Variable global para guardar las categorías
+let idUsuarioActual = null;
+let categoriasDisponibles = [];
+let movimientoEditandoId = null;
+let listaMovimientosGlobal = [];
 
-// 1. Verificar sesión y cargar datos al entrar a la página
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -11,7 +12,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
     }
 
-    // Primero pedimos el perfil para saber quién es el usuario
     try {
         const resPerfil = await fetch(`${API_URL}/usuarios/perfil`, {
             method: 'GET',
@@ -22,10 +22,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const datosUsuario = await resPerfil.json();
             idUsuarioActual = datosUsuario.IdCliente;
             
-            // Cargamos las categorías disponibles
             await cargarCategorias();
-            
-            // Ahora que sabemos quién es, cargamos su tabla de movimientos
             cargarListaMovimientos();
         }
     } catch (error) {
@@ -33,9 +30,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 });
 
-// --------------------------------------------------------
-// 👉 CARGAR CATEGORÍAS DESDE LA BD
-// --------------------------------------------------------
 async function cargarCategorias() {
     const token = localStorage.getItem("token");
     const selectCategoria = document.getElementById("categoria");
@@ -50,19 +44,14 @@ async function cargarCategorias() {
         
         if (response.ok) {
             const data = await response.json();
-            
-            // El backend devuelve directamente el array
             let categorias = Array.isArray(data) ? data : [];
             
             categoriasDisponibles = categorias;
-            
-            console.log("Categorías cargadas:", categoriasDisponibles);
             
             selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
             
             categoriasDisponibles.forEach(cat => {
                 const option = document.createElement('option');
-                // Usar 'id' como valor y 'nombre' como texto
                 option.value = cat.id;
                 option.textContent = cat.nombre;
                 selectCategoria.appendChild(option);
@@ -75,24 +64,30 @@ async function cargarCategorias() {
     }
 }
 
-// --------------------------------------------------------
 // 👉 NUEVAS FUNCIONES PARA CONTROLAR LA PANTALLA
-// --------------------------------------------------------
 function mostrarFormulario() {
-    document.getElementById("panel-formulario").style.display = "block"; // Muestra el form
-    document.getElementById("btnMostrarFormulario").style.display = "none"; // Oculta el botón
+    document.getElementById("panel-formulario").classList.remove("oculto"); 
+    document.getElementById("btnMostrarFormulario").style.display = "none"; 
 }
 
 function ocultarFormulario() {
-    document.getElementById("panel-formulario").style.display = "none"; // Oculta el form
-    document.getElementById("btnMostrarFormulario").style.display = "block"; // Muestra el botón
+    document.getElementById("panel-formulario").classList.add("oculto"); 
     
-    // Limpiamos los campos y los mensajes al cerrar
-    document.getElementById("formMovimiento").reset();
-    document.getElementById("msg-status").innerText = "";
+    setTimeout(() => {
+        document.getElementById("btnMostrarFormulario").style.display = "block"; 
+    }, 400);
+
+    const form = document.getElementById("formMovimiento");
+    if(form) form.reset();
+    
+    const msg = document.getElementById("mensaje");
+    if(msg) msg.innerText = "";
+    
+    movimientoEditandoId = null;
+    const btnSubmit = document.getElementById("btnGuardarMovimiento");
+    if(btnSubmit) btnSubmit.innerText = "Guardar Movimiento";
 }
 
-// 2. FUNCIÓN PARA OBTENER Y MOSTRAR LOS MOVIMIENTOS EN LA TABLA
 async function cargarListaMovimientos() {
     const cuerpoTabla = document.getElementById("cuerpo-tabla-movimientos");
     const token = localStorage.getItem("token");
@@ -107,6 +102,7 @@ async function cargarListaMovimientos() {
         
         if (response.ok) {
             const movimientos = await response.json();
+            listaMovimientosGlobal = movimientos;
             cuerpoTabla.innerHTML = "";
 
             const misMovimientos = movimientos.filter(mov => mov.IdCliente === idUsuarioActual);
@@ -117,14 +113,12 @@ async function cargarListaMovimientos() {
             }
 
             misMovimientos.forEach(mov => {
-                console.log("Datos del movimiento:", mov);
+                const idDelMovimiento = mov.IdIngreso || mov.IdMovimiento;
                 const idTipo = parseInt(mov.IdTipo || mov.IdMovimiento);
                 const esIngreso = idTipo === 1; 
                 
                 const tipoTexto = esIngreso ? "Ingreso" : "Egreso";
-                const colorTexto = esIngreso ? "#10b981" : "#ef4444";
 
-                // Obtener el nombre de la categoría usando 'id' en lugar de 'IdCategoria'
                 const categoria = categoriasDisponibles.find(cat => cat.id === mov.IdCategoria);
                 const nombreCategoria = categoria ? categoria.nombre : "Sin categoría";
 
@@ -133,7 +127,10 @@ async function cargarListaMovimientos() {
                         <td>${mov.Concepto}</td>
                         <td>Q${mov.Monto}</td>
                         <td>${nombreCategoria}</td>
-                        <td style="color: ${colorTexto}; font-weight: bold;">${tipoTexto}</td>
+                        <td style="text-align: center;">
+                            <button class="btn-accion" onclick="prepararEdicion(${idDelMovimiento})" title="Editar">✏️</button>
+                            <button class="btn-accion" onclick="eliminarMovimiento(${idDelMovimiento})" title="Eliminar">🗑️</button>
+                        </td>
                     </tr>
                 `;
                 cuerpoTabla.innerHTML += fila;
@@ -144,11 +141,49 @@ async function cargarListaMovimientos() {
     }
 }
 
-// 3. Evento al darle clic en "Guardar Movimiento"
+async function eliminarMovimiento(idMovimiento) {
+    if (!idMovimiento) return;
+
+    if (confirm("¿Estás seguro de que deseas eliminar este movimiento?")) {
+        try {
+            const response = await fetch(`${API_URL}/ingresos/eliminar/${idMovimiento}`, {
+                method: "DELETE"
+            });
+
+            if (response.ok) {
+                alert("Movimiento eliminado correctamente");
+                cargarListaMovimientos(); 
+            } else {
+                alert("Hubo un problema al intentar eliminar el movimiento.");
+            }
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+        }
+    }
+}
+
+function prepararEdicion(idMovimiento) {
+    const movimiento = listaMovimientosGlobal.find(m => (m.IdIngreso || m.IdMovimiento) === idMovimiento);
+    if (!movimiento) return;
+
+    mostrarFormulario();
+
+    document.getElementById("concepto").value = movimiento.Concepto;
+    document.getElementById("monto").value = movimiento.Monto;
+    document.getElementById("categoria").value = movimiento.IdCategoria;
+    document.getElementById("tipo").value = movimiento.IdTipo || movimiento.IdMovimiento;
+
+    movimientoEditandoId = idMovimiento;
+    const btnSubmit = document.getElementById("btnGuardarMovimiento");
+    btnSubmit.innerText = "Actualizar Movimiento";
+    btnSubmit.style.backgroundColor = "#f59e0b";
+}
+
+// Evento Submit (POST y PUT)
 document.getElementById('formMovimiento').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const msg = document.getElementById('msg-status');
+    const mensaje = document.getElementById('mensaje');
     const token = localStorage.getItem("token");
     
     if (!token) {
@@ -157,58 +192,72 @@ document.getElementById('formMovimiento').addEventListener('submit', async (e) =
     }
 
     if (!idUsuarioActual) {
-        msg.style.color = "var(--error)";
-        msg.innerText = "✖ Error: No se ha cargado el ID del usuario. Recarga la página.";
+        mensaje.style.color = "red";
+        mensaje.innerText = "Error: No se ha cargado el ID del usuario. Recarga la página.";
         return;
     }
 
     const idCategoria = document.getElementById('categoria').value;
     if (!idCategoria) {
-        msg.style.color = "var(--error)";
-        msg.innerText = "✖ Error: Debes seleccionar una categoría.";
+        mensaje.style.color = "red";
+        mensaje.innerText = "Error: Debes seleccionar una categoría.";
         return;
     }
 
-    msg.innerText = "Registrando...";
-    msg.style.color = "var(--text-muted)";
+    const dataPUT = {
+        Concepto: document.getElementById('concepto').value,
+        Monto: parseFloat(document.getElementById('monto').value),
+        IdCategoria: parseInt(idCategoria),
+        IdTipo: parseInt(document.getElementById('tipo').value)
+    };
 
     try {
-        const ingresoData = {
-            Concepto: document.getElementById('concepto').value,
-            Monto: parseFloat(document.getElementById('monto').value),
-            IdCliente: parseInt(idUsuarioActual),
-            IdCategoria: parseInt(idCategoria),
-            IdMovimiento: parseInt(document.getElementById('tipo').value)
-        };
+        let response;
 
-        console.log("Datos a enviar:", ingresoData);
+        if (movimientoEditandoId === null) {
+            // MODO CREAR (POST)
+            const dataPOST = {
+                ...dataPUT,
+                IdCliente: parseInt(idUsuarioActual)
+            };
 
-        const response = await fetch(`${API_URL}/ingresos/`, {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify(ingresoData)
-        });
+            response = await fetch(`${API_URL}/ingresos/`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(dataPOST)
+            });
+        } else {
+            // MODO EDITAR (PUT)
+            response = await fetch(`${API_URL}/ingresos/${movimientoEditandoId}`, {
+                method: "PUT",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(dataPUT)
+            });
+        }
 
         if (response.ok) {
-            // 👉 MAGIA: Si se guardó bien, recargamos la tabla y ocultamos el formulario
-            msg.style.color = "#10b981"; // Color verde
-            msg.innerText = "✅ Movimiento registrado con éxito";
-            cargarListaMovimientos();
-            document.getElementById("formMovimiento").reset();
+            cargarListaMovimientos(); 
             ocultarFormulario();
+            
+            alert(movimientoEditandoId ? "Movimiento actualizado con éxito" : "Movimiento creado con éxito");
+            movimientoEditandoId = null;
             
         } else {
             const errorData = await response.json();
-            msg.style.color = "var(--error)"; 
-            msg.innerText = "✖ Error: " + (errorData.detail || "Datos inválidos");
+            console.error("Error del backend:", errorData);
+            mensaje.style.color = "red";
+            mensaje.innerText = "Error en la operación. Revisa los datos.";
         }
 
     } catch (error) {
-        console.error("Error detallado:", error);
-        msg.style.color = "var(--error)";
-        msg.innerText = "✖ " + error.message;
+        console.error(error);
+        mensaje.style.color = "red";
+        mensaje.innerText = "Error de conexión con el servidor";
     }
 });
