@@ -175,16 +175,16 @@ document.getElementById('formMovimiento').addEventListener('submit', async (e) =
         });
 
         if (response.ok) {
+            mensaje.style.color = "#10b981";
+            mensaje.innerText = "✅ Movimiento registrado con éxito";
             cargarListaMovimientos(); 
-            ocultarFormulario();
-            
-            alert("Movimiento registrado con éxito");
+            setTimeout(() => ocultarFormulario(), 1500);
             
         } else {
             const errorData = await response.json();
             console.error("Error del backend:", errorData);
             mensaje.style.color = "red";
-            mensaje.innerText = "Error en la operación. Revisa los datos.";
+            mensaje.innerText = "❌ Error en la operación. Revisa los datos.";
         }
 
     } catch (error) {

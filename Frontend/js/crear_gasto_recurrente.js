@@ -81,19 +81,27 @@ async function eliminarGasto(idGasto) {
     if (!idGasto) return;
 
     if (confirm("¿Estás seguro de que deseas eliminar este gasto recurrente?")) {
+        const mensaje = document.getElementById("mensaje");
         try {
             const response = await fetch(`${API_URL}/gastos-recurrentes/eliminar/${idGasto}`, {
                 method: "DELETE"
             });
 
             if (response.ok) {
-                alert("Gasto eliminado correctamente");
-                cargarListaRecurrentes(); 
+                mensaje.style.color = "#10b981";
+                mensaje.innerText = "✅ Gasto eliminado correctamente";
+                cargarListaRecurrentes();
+                setTimeout(() => {
+                    mensaje.innerText = "";
+                }, 2000);
             } else {
-                alert("Hubo un problema al intentar eliminar el gasto.");
+                mensaje.style.color = "red";
+                mensaje.innerText = "❌ Hubo un problema al intentar eliminar el gasto.";
             }
         } catch (error) {
             console.error("Error al eliminar:", error);
+            mensaje.style.color = "red";
+            mensaje.innerText = "❌ Error al eliminar el gasto.";
         }
     }
 }
@@ -130,7 +138,11 @@ document.getElementById("formGasto").addEventListener("submit", async function(e
     const mensaje = document.getElementById("mensaje");
 
     if (!idUsuarioActual) {
-        alert("Tu sesión ha expirado.");
+        mensaje.style.color = "red";
+        mensaje.innerText = "❌ Tu sesión ha expirado. Por favor inicia sesión de nuevo.";
+        setTimeout(() => {
+            window.location.href = "usuario_index.html";
+        }, 2000);
         return; 
     }
 
@@ -166,18 +178,17 @@ document.getElementById("formGasto").addEventListener("submit", async function(e
         }
 
         if (response.ok) {
-            // Si todo sale bien, recargamos la tabla y ocultamos el formulario
+            const successMsg = gastoEditandoId ? "Gasto actualizado con éxito" : "Gasto creado con éxito";
+            mensaje.style.color = "#10b981";
+            mensaje.innerText = "✅ " + successMsg;
             cargarListaRecurrentes(); 
-            ocultarFormulario();
-            
-            // Opcional: Una pequeña alerta de éxito
-            alert(gastoEditandoId ? "Gasto actualizado con éxito" : "Gasto creado con éxito");
+            setTimeout(() => ocultarFormulario(), 1500);
             
         } else {
             const errorData = await response.json();
             console.error("Error del backend:", errorData);
             mensaje.style.color = "red";
-            mensaje.innerText = "Error en la operación. Revisa los datos.";
+            mensaje.innerText = "❌ Error en la operación. Revisa los datos.";
         }
 
     } catch (error) {
