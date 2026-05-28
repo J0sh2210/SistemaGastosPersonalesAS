@@ -11,7 +11,7 @@ class IngresoService:
             @Concepto = :Concepto, 
             @Monto = :Monto, 
             @IdCliente = :IdCliente,
-            @IdMovimiento = :IdMovimiento,  -- 👉 Agregué la coma aquí
+            @IdMovimiento = :IdMovimiento,
             @IdCategoria = :IdCategoria
         """)
         
@@ -21,7 +21,7 @@ class IngresoService:
             "Monto": ingreso.Monto,
             "IdCliente": ingreso.IdCliente,
             "IdMovimiento": ingreso.IdMovimiento,
-            "IdCategoria": ingreso.IdCategoria  # 👉 NUEVO: Le pasamos el dato al SP
+            "IdCategoria": ingreso.IdCategoria
         }).fetchone()
         
         db.commit()
@@ -56,8 +56,9 @@ class IngresoService:
     def obtener_por_cliente(db: Session, id_cliente: int):
 
         query = text("""
-            SELECT TOP 5 * FROM Movimiento
+            SELECT * FROM Movimiento
             WHERE IdCliente = :IdCliente
+            ORDER BY FechaMovimiento DESC
         """)
         
 
