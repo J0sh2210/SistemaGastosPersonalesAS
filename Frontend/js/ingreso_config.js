@@ -119,7 +119,7 @@ async function cargarListaMovimientos() {
             misMovimientos.forEach(mov => {
                 console.log("Datos del movimiento:", mov);
                 const idTipo = parseInt(mov.IdTipo || mov.IdMovimiento);
-                const esIngreso = idTipo === 2; 
+                const esIngreso = idTipo === 1; 
                 
                 const tipoTexto = esIngreso ? "Ingreso" : "Egreso";
                 const colorTexto = esIngreso ? "#10b981" : "#ef4444";

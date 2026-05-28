@@ -56,7 +56,7 @@ class IngresoService:
     def obtener_por_cliente(db: Session, id_cliente: int):
 
         query = text("""
-            SELECT * FROM Movimiento
+            SELECT TOP 5 * FROM Movimiento
             WHERE IdCliente = :IdCliente
             ORDER BY FechaMovimiento DESC
         """)
