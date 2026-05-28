@@ -51,19 +51,10 @@ async function cargarCategorias() {
         if (response.ok) {
             const data = await response.json();
             
-            // El backend puede devolver un string JSON, así que lo parseamos si es necesario
-            let categorias = data;
-            if (typeof data === 'string') {
-                categorias = JSON.parse(data);
-            }
+            // El backend devuelve directamente el array
+            let categorias = Array.isArray(data) ? data : [];
             
-            // Si es un array, usarlo directamente; si es un objeto, buscar la propiedad correcta
-            if (Array.isArray(categorias)) {
-                categoriasDisponibles = categorias;
-            } else if (categorias && typeof categorias === 'object') {
-                // Por si viene dentro de una propiedad
-                categoriasDisponibles = Object.values(categorias).flat();
-            }
+            categoriasDisponibles = categorias;
             
             console.log("Categorías cargadas:", categoriasDisponibles);
             
@@ -71,9 +62,9 @@ async function cargarCategorias() {
             
             categoriasDisponibles.forEach(cat => {
                 const option = document.createElement('option');
-                // Intentamos con diferentes nombres de propiedades
-                option.value = cat.IdCategoria || cat.id;
-                option.textContent = cat.NombreCategoria || cat.nombre || cat.Nombre;
+                // Usar 'id' como valor y 'nombre' como texto
+                option.value = cat.id;
+                option.textContent = cat.nombre;
                 selectCategoria.appendChild(option);
             });
         } else {
@@ -127,17 +118,15 @@ async function cargarListaMovimientos() {
 
             misMovimientos.forEach(mov => {
                 console.log("Datos del movimiento:", mov);
-                const idTipo = parseInt(mov.IdMovimiento);
+                const idTipo = parseInt(mov.IdTipo || mov.IdMovimiento);
                 const esIngreso = idTipo === 2; 
                 
                 const tipoTexto = esIngreso ? "Ingreso" : "Egreso";
                 const colorTexto = esIngreso ? "#10b981" : "#ef4444";
 
-                // Obtener el nombre de la categoría
-                const categoria = categoriasDisponibles.find(cat => 
-                    (cat.IdCategoria || cat.id) === mov.IdCategoria
-                );
-                const nombreCategoria = categoria ? (categoria.NombreCategoria || categoria.nombre || categoria.Nombre) : "Sin categoría";
+                // Obtener el nombre de la categoría usando 'id' en lugar de 'IdCategoria'
+                const categoria = categoriasDisponibles.find(cat => cat.id === mov.IdCategoria);
+                const nombreCategoria = categoria ? categoria.nombre : "Sin categoría";
 
                 const fila = `
                     <tr>
