@@ -2,8 +2,6 @@
 const API_URL = "http://127.0.0.1:8000";
 let idUsuarioActual = null;
 let categoriasDisponibles = [];
-let movimientoEditandoId = null;
-let listaMovimientosGlobal = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
     const token = localStorage.getItem("token");
@@ -82,10 +80,6 @@ function ocultarFormulario() {
     
     const msg = document.getElementById("mensaje");
     if(msg) msg.innerText = "";
-    
-    movimientoEditandoId = null;
-    const btnSubmit = document.getElementById("btnGuardarMovimiento");
-    if(btnSubmit) btnSubmit.innerText = "Guardar Movimiento";
 }
 
 async function cargarListaMovimientos() {
@@ -102,7 +96,6 @@ async function cargarListaMovimientos() {
         
         if (response.ok) {
             const movimientos = await response.json();
-            listaMovimientosGlobal = movimientos;
             cuerpoTabla.innerHTML = "";
 
             const misMovimientos = movimientos.filter(mov => mov.IdCliente === idUsuarioActual);
@@ -113,11 +106,11 @@ async function cargarListaMovimientos() {
             }
 
             misMovimientos.forEach(mov => {
-                const idDelMovimiento = mov.IdIngreso || mov.IdMovimiento;
                 const idTipo = parseInt(mov.IdTipo || mov.IdMovimiento);
                 const esIngreso = idTipo === 1; 
                 
                 const tipoTexto = esIngreso ? "Ingreso" : "Egreso";
+                const colorTexto = esIngreso ? "#10b981" : "#ef4444";
 
                 const categoria = categoriasDisponibles.find(cat => cat.id === mov.IdCategoria);
                 const nombreCategoria = categoria ? categoria.nombre : "Sin categoría";
@@ -127,10 +120,7 @@ async function cargarListaMovimientos() {
                         <td>${mov.Concepto}</td>
                         <td>Q${mov.Monto}</td>
                         <td>${nombreCategoria}</td>
-                        <td style="text-align: center;">
-                            <button class="btn-accion" onclick="prepararEdicion(${idDelMovimiento})" title="Editar">✏️</button>
-                            <button class="btn-accion" onclick="eliminarMovimiento(${idDelMovimiento})" title="Eliminar">🗑️</button>
-                        </td>
+                        <td style="color: ${colorTexto}; font-weight: bold;">${tipoTexto}</td>
                     </tr>
                 `;
                 cuerpoTabla.innerHTML += fila;
@@ -139,44 +129,6 @@ async function cargarListaMovimientos() {
     } catch (error) {
         console.error("Error al cargar la lista de movimientos:", error);
     }
-}
-
-async function eliminarMovimiento(idMovimiento) {
-    if (!idMovimiento) return;
-
-    if (confirm("¿Estás seguro de que deseas eliminar este movimiento?")) {
-        try {
-            const response = await fetch(`${API_URL}/ingresos/eliminar/${idMovimiento}`, {
-                method: "DELETE"
-            });
-
-            if (response.ok) {
-                alert("Movimiento eliminado correctamente");
-                cargarListaMovimientos(); 
-            } else {
-                alert("Hubo un problema al intentar eliminar el movimiento.");
-            }
-        } catch (error) {
-            console.error("Error al eliminar:", error);
-        }
-    }
-}
-
-function prepararEdicion(idMovimiento) {
-    const movimiento = listaMovimientosGlobal.find(m => (m.IdIngreso || m.IdMovimiento) === idMovimiento);
-    if (!movimiento) return;
-
-    mostrarFormulario();
-
-    document.getElementById("concepto").value = movimiento.Concepto;
-    document.getElementById("monto").value = movimiento.Monto;
-    document.getElementById("categoria").value = movimiento.IdCategoria;
-    document.getElementById("tipo").value = movimiento.IdTipo || movimiento.IdMovimiento;
-
-    movimientoEditandoId = idMovimiento;
-    const btnSubmit = document.getElementById("btnGuardarMovimiento");
-    btnSubmit.innerText = "Actualizar Movimiento";
-    btnSubmit.style.backgroundColor = "#f59e0b";
 }
 
 // Evento Submit (POST y PUT)
@@ -204,49 +156,29 @@ document.getElementById('formMovimiento').addEventListener('submit', async (e) =
         return;
     }
 
-    const dataPUT = {
+    const ingresoData = {
         Concepto: document.getElementById('concepto').value,
         Monto: parseFloat(document.getElementById('monto').value),
+        IdCliente: parseInt(idUsuarioActual),
         IdCategoria: parseInt(idCategoria),
         IdTipo: parseInt(document.getElementById('tipo').value)
     };
 
     try {
-        let response;
-
-        if (movimientoEditandoId === null) {
-            // MODO CREAR (POST)
-            const dataPOST = {
-                ...dataPUT,
-                IdCliente: parseInt(idUsuarioActual)
-            };
-
-            response = await fetch(`${API_URL}/ingresos/`, {
-                method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(dataPOST)
-            });
-        } else {
-            // MODO EDITAR (PUT)
-            response = await fetch(`${API_URL}/ingresos/${movimientoEditandoId}`, {
-                method: "PUT",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`
-                },
-                body: JSON.stringify(dataPUT)
-            });
-        }
+        const response = await fetch(`${API_URL}/ingresos/`, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(ingresoData)
+        });
 
         if (response.ok) {
             cargarListaMovimientos(); 
             ocultarFormulario();
             
-            alert(movimientoEditandoId ? "Movimiento actualizado con éxito" : "Movimiento creado con éxito");
-            movimientoEditandoId = null;
+            alert("Movimiento registrado con éxito");
             
         } else {
             const errorData = await response.json();
