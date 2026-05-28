@@ -6,12 +6,21 @@ const MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
 async function cargarMovimientos() {
     const mes = document.getElementById("selectMes").value;
     const anio = document.getElementById("inputAnio").value;
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        window.location.href = "usuario_index.html";
+        return;
+    }
 
     document.getElementById("contenido-tabla").innerHTML = '<p class="loading">⏳ Cargando...</p>';
     document.getElementById("resumen").style.display = "none";
 
     try {
-        const res = await fetch(`${API}/movimientos/filtrar?mes=${mes}&anio=${anio}`);
+        const res = await fetch(`${API}/movimientos/filtrar?mes=${mes}&anio=${anio}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
         if (!res.ok) {
             const err = await res.json();
             throw new Error(err.detail || "Error al obtener movimientos");
