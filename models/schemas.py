@@ -30,7 +30,7 @@ class IngresoResponse(IngresoBase):
     FechaMovimiento: datetime
     IdCliente: int
     IdTipo: int
-    IdCategoria: int
+    IdCategoria: Optional[int] = None
 
 class MovimientoMesResponse(BaseModel):
     IdMovimiento: int
