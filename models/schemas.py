@@ -30,6 +30,8 @@ class IngresoResponse(IngresoBase):
     FechaMovimiento: datetime
     IdCliente: int
     IdTipo: int
+    IdCategoria: int
+
 class MovimientoMesResponse(BaseModel):
     IdMovimiento: int
     Concepto: str
