@@ -6,29 +6,50 @@ const MESES = ["", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
 async function cargarMovimientos() {
     const mes = document.getElementById("selectMes").value;
     const anio = document.getElementById("inputAnio").value;
+    const token = localStorage.getItem("token");
 
-    document.getElementById("titulo-resultados").textContent = `Cargando movimientos...`;
+    if (!token) {
+        window.location.href = "usuario_index.html";
+        return;
+    }
+
     document.getElementById("contenido-tabla").innerHTML = '<p class="loading">⏳ Cargando...</p>';
     document.getElementById("resumen").style.display = "none";
 
+    // 👉 NUEVO: Convertimos el mes y año seleccionados en Fechas para el Backend
+    const mesFormateado = mes.padStart(2, '0'); // Asegura que "5" se vuelva "05"
+    const fechaInicio = `${anio}-${mesFormateado}-01`; // Siempre el día 1
+    
+    // El '0' en el día de Date nos da automáticamente el último día del mes
+    const ultimoDia = new Date(anio, mes, 0).getDate(); 
+    const fechaFin = `${anio}-${mesFormateado}-${ultimoDia}`;
+
     try {
-        const res = await fetch(`${API}/movimientos/filtrar?mes=${mes}&anio=${anio}`);
+        // 👉 AHORA ENVIAMOS fecha_inicio y fecha_fin en la URL
+        const res = await fetch(`${API}/movimientos/filtrar?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`, {
+            method: 'GET',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
         if (!res.ok) {
             const err = await res.json();
             throw new Error(err.detail || "Error al obtener movimientos");
         }
-        const movimientos = await res.json();
-        actualizarVista(movimientos, parseInt(mes), parseInt(anio));
+        
+        const data = await res.json();
+        
+        console.log(`Buscando del ${fechaInicio} al ${fechaFin}`, data);
+        
+        actualizarVista(data, parseInt(mes), parseInt(anio));
     } catch (e) {
-        document.getElementById("titulo-resultados").textContent = "Error al cargar movimientos";
         document.getElementById("contenido-tabla").innerHTML =
-            `<p class="empty-msg">❌ ${e.message}</p>`;
+            `<p class="empty-msg">❌ Error: ${e.message}</p>`;
     }
 }
 
-function actualizarVista(movimientos, mes, anio) {
-    document.getElementById("titulo-resultados").textContent =
-        `Movimientos de ${MESES[mes]} ${anio}`;
+function actualizarVista(data, mes, anio) {
+    // 1. Extraemos el arreglo sin importar cómo lo haya envuelto el backend
+    const movimientos = Array.isArray(data) ? data : (data.movimientos || data.data || []);
 
     if (!movimientos || movimientos.length === 0) {
         document.getElementById("contenido-tabla").innerHTML =
@@ -41,17 +62,23 @@ function actualizarVista(movimientos, mes, anio) {
     let totalEgresos = 0;
 
     const filas = movimientos.map(m => {
-        const monto = parseFloat(m.monto);
-        const esIngreso = m.idTipo === 1;
+        // 2. Prevenimos el error de undefined asegurando mayúsculas o minúsculas
+        const idMovimiento = m.idMovimiento || m.IdMovimiento;
+        const concepto = m.concepto || m.Concepto;
+        const monto = parseFloat(m.monto || m.Monto);
+        const idTipo = m.idTipo || m.IdTipo;
+        const fecha = m.fechaMovimiento || m.FechaMovimiento;
+
+        const esIngreso = idTipo === 1;
         if (esIngreso) totalIngresos += monto;
         else totalEgresos += monto;
 
         return `
             <tr>
-                <td>${m.idMovimiento}</td>
-                <td>${m.concepto}</td>
+                <td>${idMovimiento}</td>
+                <td>${concepto}</td>
                 <td>Q${monto.toFixed(2)}</td>
-                <td>${new Date(m.fechaMovimiento).toLocaleDateString("es-GT")}</td>
+                <td>${new Date(fecha).toLocaleDateString("es-GT")}</td>
                 <td><span class="badge ${esIngreso ? 'ingreso' : 'egreso'}">
                     ${esIngreso ? 'Ingreso' : 'Egreso'}
                 </span></td>

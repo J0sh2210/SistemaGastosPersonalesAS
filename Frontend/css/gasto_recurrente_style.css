@@ -1,0 +1,74 @@
+/* css/gasto_recurrente_style.css */
+
+body { display: block !important; background-color: var(--bg-color); margin: 0; }
+.dashboard-container { display: flex; min-height: 100vh; }
+.sidebar { width: 260px; background-color: var(--card-bg); padding: 25px 20px; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
+.sidebar h2 { color: var(--primary); margin-bottom: 30px; text-align: center; }
+.menu-item { display: block; padding: 12px 15px; color: var(--text-main); text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
+.menu-item:hover, .menu-item.active { background-color: var(--bg-color); color: var(--primary); }
+
+/* --- CONTENIDO PRINCIPAL --- */
+.main-content { 
+    flex: 1; 
+    padding: 50px; 
+    display: flex; 
+    justify-content: center; /* Centra el bloque de las dos columnas */
+    align-items: flex-start; 
+}
+
+/* --- NUEVO: CONTENEDOR DE DOS COLUMNAS --- */
+.contenedor-dos-columnas {
+    display: flex;
+    gap: 30px; /* Separación entre formulario y tabla */
+    width: 100%;
+    max-width: 1100px; /* Límite de ancho para que no se estire demasiado en monitores grandes */
+}
+
+/* Estilos del form adaptados (COLUMNA IZQUIERDA) */
+/* Modifica tu form-container actual para que quede así: */
+.form-container { 
+    background: white; 
+    padding: 25px; 
+    border-radius: 10px; 
+    width: 100%; 
+    max-width: 350px; /* Este es el ancho cuando está abierto */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    flex: none;
+    
+    /* 👉 MAGIA DE ANIMACIÓN AQUÍ */
+    overflow: hidden; /* Evita que el texto se desborde al encogerse */
+    transition: max-width 0.3s ease-in-out, padding 0.5s ease-in-out, opacity 0.2s ease-in-out;
+    opacity: 1;
+}
+
+/* 👉 NUEVA CLASE PARA OCULTAR CON ANIMACIÓN */
+.form-container.oculto {
+    max-width: 0;
+    padding-left: 0;
+    padding-right: 0;
+    opacity: 0;
+    margin: 0;
+    border: none;
+}
+input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
+#mensaje { text-align: center; margin-top: 10px; font-weight: bold; }
+
+/* --- NUEVO: CONTENEDOR DE LA TABLA (COLUMNA DERECHA) --- */
+.tabla-container {
+    background: white; 
+    padding: 25px; 
+    border-radius: 10px; 
+    flex: 1; /* Hace que la tabla tome todo el espacio sobrante a la derecha */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.tabla-gastos { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.tabla-gastos th, .tabla-gastos td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
+.tabla-gastos th { color: var(--primary, #0088cc); font-weight: bold; }
+
+/* Botones de acción (Editar y Eliminar) */
+.btn-accion {
+    background: none; border: none; cursor: pointer;
+    font-size: 1.2rem; margin: 0 5px; transition: 0.2s;
+}
+.btn-accion:hover { transform: scale(1.2); }

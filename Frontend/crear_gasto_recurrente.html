@@ -4,60 +4,10 @@
     <meta charset="UTF-8">
     <title>Crear Gasto Recurrente</title>
     <link rel="stylesheet" href="css/usuario_style.css">
-    <style>
-        body { display: block !important; background-color: var(--bg-color); margin: 0; }
-        .dashboard-container { display: flex; min-height: 100vh; }
-        .sidebar { width: 260px; background-color: var(--card-bg); padding: 25px 20px; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.05); }
-        .sidebar h2 { color: var(--primary); margin-bottom: 30px; text-align: center; }
-        .menu-item { display: block; padding: 12px 15px; color: var(--text-main); text-decoration: none; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
-        .menu-item:hover, .menu-item.active { background-color: var(--bg-color); color: var(--primary); }
-
-        /* --- CONTENIDO PRINCIPAL --- */
-        .main-content { 
-            flex: 1; 
-            padding: 50px; 
-            display: flex; 
-            justify-content: center; /* Centra el bloque de las dos columnas */
-            align-items: flex-start; 
-        }
-
-        /* --- NUEVO: CONTENEDOR DE DOS COLUMNAS --- */
-        .contenedor-dos-columnas {
-            display: flex;
-            gap: 30px; /* Separación entre formulario y tabla */
-            width: 100%;
-            max-width: 1100px; /* Límite de ancho para que no se estire demasiado en monitores grandes */
-        }
-
-        /* Estilos del form de Enma adaptados (COLUMNA IZQUIERDA) */
-        .form-container { 
-            background: white; 
-            padding: 25px; 
-            border-radius: 10px; 
-            width: 100%; 
-            max-width: 350px; /* Mantiene el formulario compacto */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-            flex: none; /* Evita que el formulario crezca de más */
-        }
-        input, select { width: 100%; padding: 12px; margin: 8px 0; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; }
-        #mensaje { text-align: center; margin-top: 10px; font-weight: bold; }
-
-        /* --- NUEVO: CONTENEDOR DE LA TABLA (COLUMNA DERECHA) --- */
-        .tabla-container {
-            background: white; 
-            padding: 25px; 
-            border-radius: 10px; 
-            flex: 1; /* Hace que la tabla tome todo el espacio sobrante a la derecha */
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .tabla-gastos { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .tabla-gastos th, .tabla-gastos td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-        .tabla-gastos th { color: var(--primary, #0088cc); font-weight: bold; }
-    </style>
+    <link rel="stylesheet" href="css/gasto_recurrente_style.css"> 
 </head>
 <body>
-        <div class="dashboard-container">
+    <div class="dashboard-container">
         
         <nav class="sidebar">
             <h2>Mi Sistema</h2>
@@ -66,51 +16,66 @@
             <a href="crear_gasto_recurrente.html" class="menu-item">➕ Gasto Recurrente</a>
             <a href="listar_gastos_recurrentes.html" class="menu-item">📋 Lista Gastos</a>
             <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
-            <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Ingreso</a>
-            <a href="listado_gastos.html"class = "menu-item">💸 Mis Gastos</a>
+            <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Movimiento</a>
+            <a href="listado_gastos.html" class="menu-item">💸 Mis Gastos</a>
+            <a href="presupuesto.html" class="menu-item">💵 Presupuestos</a>
+            <a href="tablero_control.html" class="menu-item active">📊 Monitoreo</a>
             
             <div style="flex-grow: 1;"></div>
             <button onclick="logout()" class="btn btn-outline" style="width: 100%;">Cerrar Sesión</button>
         </nav>
 
-    <div class="main-content">
-        
-        <div class="contenedor-dos-columnas">
+        <div class="main-content">
             
-            <div class="form-container">
-                <h3 style="text-align: center; color: var(--primary, #0088cc); margin-top: 0;">Crear Gasto Recurrente</h3>
-                <form id="formGasto">
-                    <input type="text" id="concepto" placeholder="Concepto" required>
-                    <input type="number" id="monto" placeholder="Monto" required>
-                    <input type="date" id="fechaInicio" required>
-                    <select id="frecuencia">
-                        <option value="mensual">Mensual</option>
-                        <option value="quincenal">Quincenal</option>
-                        <option value="anual">Anual</option>
-                    </select>
-                    <button type="submit" style="width: 100%; padding: 12px; background-color: var(--primary, #0088cc); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;">
-                        Guardar Gasto
+            <div class="contenedor-dos-columnas">
+                
+                <div class="form-container oculto" id="panel-formulario">
+                    <h3 style="text-align: center; color: var(--primary, #0088cc); margin-top: 0;">Gasto Recurrente</h3>
+                    <form id="formGasto">
+                        <input type="text" id="concepto" placeholder="Concepto" required>
+                        <input type="number" id="monto" placeholder="Monto" required>
+                        <input type="date" id="fechaInicio" required>
+                        <select id="frecuencia">
+                            <option value="mensual">Mensual</option>
+                            <option value="quincenal">Quincenal</option>
+                            <option value="anual">Anual</option>
+                        </select>
+                        
+                        <button type="submit" id="btnGuardarGasto" style="width: 100%; padding: 12px; background-color: var(--primary, #0088cc); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 15px;">
+                            Guardar Gasto
+                        </button>
+                        
+                        <button type="button" onclick="ocultarFormulario()" style="width: 100%; padding: 12px; background-color: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                            Cerrar / Cancelar
+                        </button>
+
+                        <p id="mensaje"></p>
+                    </form>
+                </div>
+
+                <div class="tabla-container">
+                    <h3 style="text-align: center; color: var(--primary, #0088cc); margin-top: 0;">Mis Gastos Recurrentes</h3>
+                    <table class="tabla-gastos">
+                        <thead>
+                            <tr>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>Frecuencia</th>
+                                <th style="text-align: center;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpo-tabla-recurrentes">
+                            </tbody>
+                    </table>
+
+                    <button id="btnMostrarFormulario" onclick="mostrarFormulario()" style="width: 100%; padding: 12px; background-color: #10b3b9; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-top: 25px; font-size: 1rem;">
+                        ➕ Agregar Nuevo Gasto Recurrente
                     </button>
-                    <p id="mensaje"></p>
-                </form>
-            </div>
+                </div>
 
-            <div class="tabla-container">
-                <h3 style="text-align: center; color: var(--primary, #0088cc); margin-top: 0;">Mis Gastos Recurrentes</h3>
-                <table class="tabla-gastos">
-                    <thead>
-                        <tr>
-                            <th>Concepto</th>
-                            <th>Monto</th>
-                            <th>Frecuencia</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpo-tabla-recurrentes">
-                        </tbody>
-                </table>
-            </div>
-
-        </div> </div> </div>
+            </div> 
+        </div> 
+    </div>
     <script src="js/crear_gasto_recurrente.js"></script>
     <script>function logout(){ localStorage.removeItem("token"); window.location.href="usuario_index.html"; }</script>
 </body>

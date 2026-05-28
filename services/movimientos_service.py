@@ -116,19 +116,44 @@ def calcular_diferencia(tipo: str):
     return data
 
 def filtrar_movimientos(db: Session, id_cliente, id_tipo=None, fecha_inicio=None, fecha_fin=None):
-    query = text("""
-        EXEC sp_FiltrarMovimientos 
-            @IdCliente = :id_cliente,
-            @IdTipo = :id_tipo,
-            @FechaInicio = :fecha_inicio,
-            @FechaFin = :fecha_fin
-    """)
+    # 1. Empezamos con la consulta base, uniendo con TipoMovimiento por si necesitas el nombre
+    base_query = """
+        SELECT 
+            m.IdMovimiento,
+            m.Concepto,
+            m.Monto,
+            m.FechaMovimiento,
+            m.IdCliente,
+            m.IdTipo,
+            m.IdCategoria,
+            tm.Nombre AS NombreTipoMovimiento
+        FROM Movimiento m
+        LEFT JOIN TipoMovimiento tm ON m.IdTipo = tm.IdTipo
+        WHERE m.IdCliente = :id_cliente
+        
+    """
+    
+    # 2. Preparamos el diccionario de parámetros obligatorios
+    params = {"id_cliente": id_cliente}
 
-    result = db.execute(query, {
-        "id_cliente": id_cliente,
-        "id_tipo": id_tipo,
-        "fecha_inicio": fecha_inicio,
-        "fecha_fin": fecha_fin
-    }).fetchall()
+    # 3. Agregamos condiciones extra solo si se enviaron parámetros
+    if id_tipo is not None:
+        base_query += " AND m.IdTipo = :id_tipo"
+        params["id_tipo"] = id_tipo
+
+    if fecha_inicio is not None:
+        base_query += " AND CAST(m.FechaMovimiento AS DATE) >= :fecha_inicio"
+        params["fecha_inicio"] = fecha_inicio
+
+    if fecha_fin is not None:
+        base_query += " AND CAST(m.FechaMovimiento AS DATE) <= :fecha_fin"
+        params["fecha_fin"] = fecha_fin
+
+    # 4. Ordenamos para que salgan los más recientes primero
+    base_query += " ORDER BY m.FechaMovimiento DESC"
+
+    # 5. Ejecutamos la consulta dinámica
+    query = text(base_query)
+    result = db.execute(query, params).fetchall()
 
     return [dict(row._mapping) for row in result]
