@@ -161,7 +161,7 @@ document.getElementById('formMovimiento').addEventListener('submit', async (e) =
         Monto: parseFloat(document.getElementById('monto').value),
         IdCliente: parseInt(idUsuarioActual),
         IdCategoria: parseInt(idCategoria),
-        IdTipo: parseInt(document.getElementById('tipo').value)
+        IdMovimiento: parseInt(document.getElementById('tipo').value)
     };
 
     try {
