@@ -40,7 +40,7 @@ async function cargarCategorias() {
     const token = localStorage.getItem("token");
     const selectCategoria = document.getElementById("categoria");
     
-    if (!token) return;
+    if (!token || !selectCategoria) return;
     
     try {
         const response = await fetch(`${API_URL}/categorias/`, {
@@ -49,15 +49,35 @@ async function cargarCategorias() {
         });
         
         if (response.ok) {
-            categoriasDisponibles = await response.json();
+            const data = await response.json();
+            
+            // El backend puede devolver un string JSON, así que lo parseamos si es necesario
+            let categorias = data;
+            if (typeof data === 'string') {
+                categorias = JSON.parse(data);
+            }
+            
+            // Si es un array, usarlo directamente; si es un objeto, buscar la propiedad correcta
+            if (Array.isArray(categorias)) {
+                categoriasDisponibles = categorias;
+            } else if (categorias && typeof categorias === 'object') {
+                // Por si viene dentro de una propiedad
+                categoriasDisponibles = Object.values(categorias).flat();
+            }
+            
+            console.log("Categorías cargadas:", categoriasDisponibles);
+            
             selectCategoria.innerHTML = '<option value="">Selecciona una categoría</option>';
             
             categoriasDisponibles.forEach(cat => {
                 const option = document.createElement('option');
-                option.value = cat.IdCategoria;
-                option.textContent = cat.NombreCategoria;
+                // Intentamos con diferentes nombres de propiedades
+                option.value = cat.IdCategoria || cat.id;
+                option.textContent = cat.NombreCategoria || cat.nombre || cat.Nombre;
                 selectCategoria.appendChild(option);
             });
+        } else {
+            console.error("Error en la respuesta:", response.status);
         }
     } catch (error) {
         console.error("Error al cargar las categorías:", error);
@@ -114,8 +134,10 @@ async function cargarListaMovimientos() {
                 const colorTexto = esIngreso ? "#10b981" : "#ef4444";
 
                 // Obtener el nombre de la categoría
-                const categoria = categoriasDisponibles.find(cat => cat.IdCategoria === mov.IdCategoria);
-                const nombreCategoria = categoria ? categoria.NombreCategoria : "Sin categoría";
+                const categoria = categoriasDisponibles.find(cat => 
+                    (cat.IdCategoria || cat.id) === mov.IdCategoria
+                );
+                const nombreCategoria = categoria ? (categoria.NombreCategoria || categoria.nombre || categoria.Nombre) : "Sin categoría";
 
                 const fila = `
                     <tr>
@@ -151,6 +173,13 @@ document.getElementById('formMovimiento').addEventListener('submit', async (e) =
         return;
     }
 
+    const idCategoria = document.getElementById('categoria').value;
+    if (!idCategoria) {
+        msg.style.color = "var(--error)";
+        msg.innerText = "✖ Error: Debes seleccionar una categoría.";
+        return;
+    }
+
     msg.innerText = "Registrando...";
     msg.style.color = "var(--text-muted)";
 
@@ -159,7 +188,7 @@ document.getElementById('formMovimiento').addEventListener('submit', async (e) =
             Concepto: document.getElementById('concepto').value,
             Monto: parseFloat(document.getElementById('monto').value),
             IdCliente: parseInt(idUsuarioActual),
-            IdCategoria: parseInt(document.getElementById('categoria').value),
+            IdCategoria: parseInt(idCategoria),
             IdMovimiento: parseInt(document.getElementById('tipo').value)
         };
 
