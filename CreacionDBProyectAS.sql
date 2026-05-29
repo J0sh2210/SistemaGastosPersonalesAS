@@ -74,6 +74,10 @@ CREATE TABLE CategoriaMovimiento (
 ALTER TABLE Movimiento ADD IdCategoria INT;
 ALTER TABLE Movimiento ADD CONSTRAINT FK_Movimiento_Categoria
 FOREIGN KEY (IdCategoria) REFERENCES CategoriaMovimiento(IdCategoria);
+
+ALTER TABLE Movimiento ADD IdMeta INT NULL;
+ALTER TABLE Movimiento ADD CONSTRAINT FK_Movimiento_Meta
+FOREIGN KEY (IdMeta) REFERENCES MetasAhorro(IdMeta);
 -- TABLA 9
 CREATE TABLE GastoRecurrente (
   IdGastoRecurrente INT PRIMARY KEY IDENTITY(1,1),
@@ -217,21 +221,30 @@ VALUES
 ------------------------------------------------------------
 
 -- 1. SP para Registrar un Ingreso (Fuerza el IdTipo = 1)
-CREATE PROCEDURE sp_RegistrarIngreso
+CREATE OR ALTER PROCEDURE sp_RegistrarIngreso
     @Concepto VARCHAR(30),
     @Monto DECIMAL(12,2),
     @IdCliente INT,
-    @IdCategoria INT
+    @IdCategoria INT,
+    @IdMeta INT = NULL
 AS
 BEGIN
     DECLARE @NuevoId INT;
     
-    INSERT INTO Movimiento (Concepto, Monto, FechaMovimiento, IdCliente, IdTipo,  IdCategoria)
-    VALUES (@Concepto, @Monto, GETDATE(), @IdCliente, 1, @IdCategoria);
+    INSERT INTO Movimiento (Concepto, Monto, FechaMovimiento, IdCliente, IdTipo, IdCategoria, IdMeta)
+    VALUES (@Concepto, @Monto, GETDATE(), @IdCliente, 1, @IdCategoria, @IdMeta);
     
     SET @NuevoId = SCOPE_IDENTITY();
     
-    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo, IdCategoria
+    -- Si hay una meta, actualizar el MontoActual de la meta
+    IF @IdMeta IS NOT NULL
+    BEGIN
+        UPDATE MetasAhorro
+        SET MontoActual = MontoActual + @Monto
+        WHERE IdMeta = @IdMeta;
+    END
+    
+    SELECT IdMovimiento, Concepto, Monto, FechaMovimiento, IdCliente, IdTipo, IdCategoria, IdMeta
     FROM Movimiento 
     WHERE IdMovimiento = @NuevoId;
 END;
