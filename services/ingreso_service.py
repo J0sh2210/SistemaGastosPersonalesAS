@@ -11,8 +11,9 @@ class IngresoService:
             @Concepto = :Concepto, 
             @Monto = :Monto, 
             @IdCliente = :IdCliente,
-            @IdMovimiento = :IdMovimiento,
-            @IdCategoria = :IdCategoria
+            @IdCategoria = :IdCategoria,
+            @IdMeta = :IdMeta,
+            @IdTipo =:IdTipo
         """)
         
         # Ejecutamos y extraemos la fila
@@ -20,8 +21,9 @@ class IngresoService:
             "Concepto": ingreso.Concepto,
             "Monto": ingreso.Monto,
             "IdCliente": ingreso.IdCliente,
-            "IdMovimiento": ingreso.IdMovimiento,
-            "IdCategoria": ingreso.IdCategoria
+            "IdCategoria": ingreso.IdCategoria,
+            "IdMeta": ingreso.IdMeta,
+            "IdTipo": ingreso.IdTipo
         }).fetchone()
         
         db.commit()

@@ -1,6 +1,7 @@
 from datetime import date
 from fastapi import HTTPException
 from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from database import engine
 
@@ -150,3 +151,22 @@ def eliminar_meta(id_meta):
             status_code=500,
             detail=str(e)
         )
+def obtener_metas_por_usuario(db: Session, id_usuario: int):
+    # Consulta SQL para traer las metas filtrando por el ID correcto
+    query = text("""
+        SELECT 
+            IdMeta, 
+            IdUsuario, 
+            NombreMeta, 
+            MontoObjetivo, 
+            FechaLimite, 
+            MontoActual
+        FROM MetasAhorro
+        WHERE IdUsuario = :id_usuario
+    """)
+    
+    # Ejecutamos la consulta pasándole el parámetro
+    result = db.execute(query, {"id_usuario": id_usuario}).fetchall()
+    
+    # Mapeamos los resultados a una lista de diccionarios para que FastAPI los convierta a JSON
+    return [row._mapping for row in result]

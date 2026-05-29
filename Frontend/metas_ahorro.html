@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Metas de Ahorro</title>
+    <link rel="stylesheet" href="css/usuario_style.css">
+    <link rel="stylesheet" href="css/gasto_recurrente_style.css"> 
+</head>
+<body>
+    <div class="dashboard-container">
+        
+        <nav class="sidebar">
+            <h2>Sistema Gastos</h2>
+            <a href="dashboard.html" class="menu-item">👤 Mi Perfil</a>
+            <a href="categoria_index.html" class="menu-item">📁 Categorías</a>
+            <a href="crear_gasto_recurrente.html" class="menu-item">➕ Gasto Recurrente</a>
+            <a href="movimientos_mes.html" class="menu-item">📅 Movimientos</a>
+            <a href="registrar_ingreso.html" class="menu-item">💰 Registrar Movimiento</a>
+            <a href="presupuesto.html" class="menu-item">💵 Presupuestos</a>
+            <a href="metas_ahorro.html" class="menu-item active">🎯 Metas de Ahorro</a>
+            <a href="tablero_control.html" class="menu-item">📊 Monitoreo</a>
+            
+            <div style="flex-grow: 1;"></div>
+            <button onclick="logout()" class="btn btn-outline" style="width: 100%;">Cerrar Sesión</button>
+        </nav>
+
+        <div class="main-content">
+            <div class="contenedor-dos-columnas">
+                
+                <div class="form-container oculto" id="panel-formulario">
+                    <h2 style="text-align: center; color: var(--primary, #0088cc); margin-top: 0;">Nueva Meta</h2>
+                    <p class="subtitle">Define tu objetivo de ahorro</p>
+                    
+                    <form id="formMeta">
+                        <div class="form-group">
+                            <label for="nombreMeta">Nombre de la Meta</label>
+                            <input type="text" id="nombreMeta" placeholder="Ej. Comprar consola" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="montoObjetivo">Monto Objetivo</label>
+                            <input type="number" step="0.01" id="montoObjetivo" placeholder="Ej. 5000" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="fechaLimite">Fecha Límite</label>
+                            <input type="date" id="fechaLimite" required>
+                        </div>
+                        
+                        <button type="submit" class="btn-success" style="width: 100%; padding: 12px; background-color: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px;">
+                            Guardar Meta
+                        </button>
+                        
+                        <button type="button" onclick="ocultarFormulario()" style="width: 100%; padding: 12px; background-color: #6b7280; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                            Cerrar / Cancelar
+                        </button>
+
+                        <p id="mensaje"></p>
+                    </form>
+                </div>
+
+                                <div class="tabla-container">
+                    <h3 style="text-align: center; color: var(--primary, #0088cc); margin-top: 0; margin-bottom: 20px;">Mis Metas de Ahorro</h3>
+                    
+
+
+                    <table style="width: 100%; border-collapse: collapse; text-align: left; margin-top: 10px;"> 
+                        <thead>
+                            <tr style="background-color: #f3f4f6; border-bottom: 2px solid #ddd;">
+                                <th style="padding: 12px;">Meta</th>
+                                <th style="padding: 12px;">Objetivo</th>
+                                <th style="padding: 12px;">Fecha Límite</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="cuerpo-tabla-metas">
+                            <tr>
+                                <td colspan="3" style="text-align: center; padding: 20px; color: #6b7280;">Aún no tienes metas registradas.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                                        <button id="btnMostrarFormulario" onclick="mostrarFormulario()" style="width: 100%; padding: 12px; background-color: #1c9cf7; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; margin-bottom: 20px; font-size: 1rem;">
+                        Nueva Meta de Ahorro
+                    </button>
+                </div>
+
+            </div> 
+        </div> 
+    </div>
+
+    <script src="js/metas_ahorro.js"></script>
+    <script>function logout(){ localStorage.removeItem("token"); window.location.href="usuario_index.html"; }</script>
+</body>
+</html>

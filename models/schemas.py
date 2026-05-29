@@ -19,6 +19,8 @@ class IngresoCreate(IngresoBase):
     IdCliente: int
     IdMovimiento: int
     IdCategoria: int
+    IdMeta: Optional[int] = None
+    IdTipo: int
 
 # Al editar, solo recibimos concepto y monto (heredados de IngresoBase)
 class IngresoUpdate(IngresoBase):
@@ -31,6 +33,7 @@ class IngresoResponse(IngresoBase):
     IdCliente: int
     IdTipo: int
     IdCategoria: Optional[int] = None
+    IdMeta: Optional[int] = None
 
 class MovimientoMesResponse(BaseModel):
     IdMovimiento: int

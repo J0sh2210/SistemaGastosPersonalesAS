@@ -15,6 +15,7 @@ class Movimiento(Base):
     IdTipo = Column(Integer)
 
     IdCategoria = Column(Integer)
+    IdMeta = Column(Integer, nullable=True)
 
 class EditarCategoriaRequest(BaseModel):
     idCategoria: int
