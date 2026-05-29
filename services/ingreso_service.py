@@ -35,12 +35,14 @@ class IngresoService:
             EXEC sp_EditarIngreso 
             @IdMovimiento = :IdMovimiento, 
             @Concepto = :Concepto, 
-            @Monto = :Monto
+            @Monto = :Monto,
+            @IdCategoria = :IdCategoria
         """)
         result = db.execute(query, {
             "IdMovimiento": id_movimiento,
             "Concepto": ingreso.Concepto,
-            "Monto": ingreso.Monto
+            "Monto": ingreso.Monto,
+            "IdCategoria": ingreso.IdCategoria
         }).fetchone()
         
         db.commit()

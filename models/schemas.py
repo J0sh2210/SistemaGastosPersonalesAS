@@ -1,13 +1,8 @@
-from pydantic import BaseModel, Field, PositiveFloat
+from pydantic import BaseModel, Field, PositiveFloat, ConfigDict
 from datetime import datetime
 from typing import Optional
-
 from datetime import date
-from typing import Optional
 from enum import Enum
-
-from pydantic import BaseModel, Field
-from datetime import datetime
 
 # Clase base con lo que comparten creación y edición
 class IngresoBase(BaseModel):
@@ -24,6 +19,7 @@ class IngresoCreate(IngresoBase):
 
 # Al editar, solo recibimos concepto y monto (heredados de IngresoBase)
 class IngresoUpdate(IngresoBase):
+    IdCategoria: int
     pass
 
 # Lo que la API le responde al Frontend
@@ -36,6 +32,8 @@ class IngresoResponse(IngresoBase):
     IdMeta: Optional[int] = None
 
 class MovimientoMesResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     IdMovimiento: int
     Concepto: str
     Monto: float
@@ -43,9 +41,6 @@ class MovimientoMesResponse(BaseModel):
     IdCliente: int
     IdTipo: int
     NombreTipoMovimiento: str  # Devolverá "Ingreso" o "Egreso"
-
-    class Config:
-        from_attributes = True
 
 class GastoBase(BaseModel):
     Concepto: str = Field(..., min_length=1, max_length=30)
@@ -57,11 +52,10 @@ class GastoCreate(GastoBase):
     pass
 
 class GastoResponse(GastoBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     IdMovimiento: int
     FechaMovimiento: datetime
-
-    class Config:
-        from_attributes = True # Equivalente a orm_mode en Pydantic v2
 
 class FrecuenciaEnum(str, Enum):
     mensual = "mensual"
@@ -74,6 +68,8 @@ class CrearGastoRecurrente(BaseModel):
     IdCliente: int
 
 class LeerGastoRecurrente(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     IdGastoRecurrente: int
     Concepto: str
     Monto: float
@@ -81,9 +77,6 @@ class LeerGastoRecurrente(BaseModel):
     Frecuencia: str
     IdCliente: int
     Activo: bool
-
-    class Config:
-        from_attributes = True
 
 class ActualizarGastoRecurrente(BaseModel):
     Concepto: Optional[str] = None
@@ -103,17 +96,18 @@ class PresupuestoUpdate(PresupuestoBase):
     pass
 
 class PresupuestoResponse(PresupuestoBase):
+    model_config = ConfigDict(from_attributes=True)
+    
     IdPresupuesto: int
     FechaCreacion: datetime
-
-    class Config:
-        from_attributes = True
 
 from typing import List
 from pydantic import BaseModel
 from datetime import datetime
 
 class ResumenMesResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     anio: int
     mes: int
     idCliente: int
@@ -122,6 +116,3 @@ class ResumenMesResponse(BaseModel):
     balance: float
     ingresos: List[dict]
     egresos: List[dict]
-
-    class Config:
-        from_attributes = True

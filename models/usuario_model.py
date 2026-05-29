@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
 from sqlalchemy.sql import func
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from database import Base
 
 
@@ -49,12 +49,11 @@ class ActualizarUsuario(BaseModel):
     segundoApellido: str | None = None
     
 class UsuarioResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    
     IdCliente: int  # <--- Aquí está la magia
     usuario: str
     nombre: str
     segundoNombre: str | None = None
     apellido: str
     segundoApellido: str | None = None
-
-    class Config:
-        from_attributes = True
