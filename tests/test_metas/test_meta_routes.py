@@ -1,13 +1,19 @@
 import pytest
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from fastapi import FastAPI, status
 from fastapi.testclient import TestClient
 
 # Importamos tu router de metas
 from routes.meta_routes import router as meta_router
-
 app_metas_test = FastAPI()
 app_metas_test.include_router(meta_router)
+
+
+def override_get_db():
+    mock_db = MagicMock()
+    yield mock_db
+
+
 
 client = TestClient(app_metas_test)
 

@@ -1,3 +1,8 @@
+from unittest.mock import MagicMock, patch
+
+from models.categoria_model import CategoriaCreate
+from services.categoria_service import crear_categoria
+
 def test_crear_categoria_servicio():
     data = CategoriaCreate(nombre_categoria="Comida", id_tipo_movimiento=1, id_tipo_categoria=2)
     with patch("services.categoria_service.engine") as mock_engine:
