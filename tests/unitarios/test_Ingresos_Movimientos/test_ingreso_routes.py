@@ -22,13 +22,17 @@ def test_registrar_ingreso_route(mock_registrar):
         "FechaMovimiento": "2026-05-29T10:00:00",
         "IdCliente": 1,
         "IdTipo": 1,
-        "IdCategoria": None
+        "IdCategoria": 1
     }
+    
+    # ¡CORRECCIÓN AQUÍ! Agregamos los campos obligatorios
     payload = {
         "Concepto": "Sueldo",
         "Monto": 1000.0,
         "IdCliente": 1,
-        "IdMovimiento": 1
+        "IdMovimiento": 1,
+        "IdCategoria": 1,
+        "IdTipo": 1
     }
 
     response = client.post("/ingresos/", json=payload)
@@ -44,11 +48,14 @@ def test_editar_ingreso_route(mock_editar):
         "FechaMovimiento": "2026-05-29T10:00:00",
         "IdCliente": 1,
         "IdTipo": 1,
-        "IdCategoria": None
+        "IdCategoria": 1
     }
+    
+    # ¡CORRECCIÓN AQUÍ! Agregamos el IdCategoria que pedía IngresoUpdate
     payload = {
         "Concepto": "Bono",
-        "Monto": 500.0
+        "Monto": 500.0,
+        "IdCategoria": 1
     }
 
     response = client.put("/ingresos/1", json=payload)

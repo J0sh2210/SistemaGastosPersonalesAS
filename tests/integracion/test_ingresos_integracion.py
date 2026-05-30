@@ -6,7 +6,10 @@ def test_integracion_registrar_y_editar_ingreso(client):
         "Concepto": "Bono de Integracion SRE",
         "Monto": 3500.50,
         "IdCliente": 1,
-        "IdMovimiento": 999999  # Usa un IdMovimiento que no choque o dependa de tu lógica de BD
+        "IdMovimiento": 999999,
+        "IdCategoria": 1,
+        "IdMeta": None,
+        "IdTipo": 1
     }
     
     response_post = client.post("/ingresos/", json=payload_nuevo)
@@ -21,9 +24,10 @@ def test_integracion_registrar_y_editar_ingreso(client):
     id_generado = datos_creados["IdMovimiento"]
 
     # --- PASO 2: Probar la edición real usando sp_EditarIngreso ---
-    payload_editado = {
-        "Concepto": "Bono de Integracion SRE (Modificado)",
-        "Monto": 4000.00
+    payload_editado = { 
+        "Concepto": "Bono SRE (Modificado)",
+        "Monto": 4000.00,
+        "IdCategoria": 1
     }
     
     response_put = client.put(f"/ingresos/{id_generado}", json=payload_editado)
@@ -31,5 +35,5 @@ def test_integracion_registrar_y_editar_ingreso(client):
     # Validamos que la actualización impacte correctamente
     assert response_put.status_code == 200
     datos_editados = response_put.json()
-    assert datos_editados["Concepto"] == "Bono de Integracion SRE (Modificado)"
+    assert datos_editados["Concepto"] == "Bono SRE (Modificado)"
     assert float(datos_editados["Monto"]) == 4000.00

@@ -7,7 +7,17 @@ from services.ingreso_service import IngresoService
 def test_registrar_ingreso():
     # Arrange
     mock_db = MagicMock()
-    mock_ingreso = IngresoCreate(Concepto="Venta", Monto=100.0, IdCliente=1, IdMovimiento=10)
+    
+    # AQUÍ ESTÁN LOS 2 CAMPOS FALTANTES QUE DEBEN QUITAR EL ERROR
+    mock_ingreso = IngresoCreate(
+        Concepto="Venta", 
+        Monto=100.0, 
+        IdCliente=1, 
+        IdMovimiento=10,
+        IdCategoria=1,  # <--- Faltaba este
+        IdTipo=1        # <--- Faltaba este
+    )
+    
     mock_result = MagicMock()
     mock_result._mapping = {"IdMovimiento": 10, "Estado": "Registrado"}
     mock_db.execute.return_value.fetchone.return_value = mock_result
@@ -23,7 +33,14 @@ def test_registrar_ingreso():
 def test_editar_ingreso_exitoso():
     # Arrange
     mock_db = MagicMock()
-    mock_ingreso_update = IngresoUpdate(Concepto="Venta Editada", Monto=150.0)
+    
+    # AQUÍ ESTÁ EL CAMPO FALTANTE QUE DEBE QUITAR EL ERROR
+    mock_ingreso_update = IngresoUpdate(
+        Concepto="Venta Editada", 
+        Monto=150.0,
+        IdCategoria=1   # <--- Faltaba este
+    )
+    
     mock_result = MagicMock()
     mock_result._mapping = {"IdMovimiento": 1, "Concepto": "Venta Editada"}
     mock_db.execute.return_value.fetchone.return_value = mock_result
@@ -38,7 +55,14 @@ def test_editar_ingreso_exitoso():
 def test_editar_ingreso_no_encontrado():
     # Arrange
     mock_db = MagicMock()
-    mock_ingreso_update = IngresoUpdate(Concepto="Venta Editada", Monto=150.0)
+    
+    # AQUÍ ESTÁ EL CAMPO FALTANTE QUE DEBE QUITAR EL ERROR
+    mock_ingreso_update = IngresoUpdate(
+        Concepto="Venta Editada", 
+        Monto=150.0,
+        IdCategoria=1   # <--- Faltaba este
+    )
+    
     mock_db.execute.return_value.fetchone.return_value = None
 
     # Act & Assert
