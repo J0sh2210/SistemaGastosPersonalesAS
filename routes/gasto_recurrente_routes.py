@@ -31,6 +31,17 @@ def crear_gasto_recurrente(gasto: CrearGastoRecurrente, db: Session = Depends(ge
     db.refresh(nuevo)
     return nuevo
 
+@router.get("/generate-monthly")
+def generar_gastos_mensuales(db: Session = Depends(get_db)):
+    hoy = date.today()
+    gastos = db.query(GastoRecurrente).filter(GastoRecurrente.Activo == True).all()
+    generados = []
+    for gasto in gastos:
+        if gasto.FechaInicio.day == hoy.day:
+            generados.append({"Concepto": gasto.Concepto, "Monto": float(gasto.Monto), "Fecha": hoy})
+    return {"message": "Gastos procesados", "data": generados}
+
+
 @router.get("/{id_cliente}", response_model=List[LeerGastoRecurrente])
 def listar_gastos_recurrentes(id_cliente: int, db: Session = Depends(get_db)):
     return db.query(GastoRecurrente).filter(
@@ -62,15 +73,7 @@ def actualizar_gasto_recurrente(id: int, datos: ActualizarGastoRecurrente, db: S
 
 
 
-@router.get("/generate-monthly")
-def generar_gastos_mensuales(db: Session = Depends(get_db)):
-    hoy = date.today()
-    gastos = db.query(GastoRecurrente).filter(GastoRecurrente.Activo == True).all()
-    generados = []
-    for gasto in gastos:
-        if gasto.FechaInicio.day == hoy.day:
-            generados.append({"Concepto": gasto.Concepto, "Monto": float(gasto.Monto), "Fecha": hoy})
-    return {"message": "Gastos procesados", "data": generados}
+
 
 @router.put("/desactivar/{id}")
 def desactivar(id: int, db: Session = Depends(get_db)):
